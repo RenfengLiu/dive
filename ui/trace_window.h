@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <QComboBox>
+#include <QIdentityProxyModel>
+#include <QStandardItemModel>
 // Forward declarations
 class QLabel;
 class QHBoxLayout;
@@ -27,6 +30,39 @@ class QPushButton;
 class QVBoxLayout;
 class QComboBox;
 class QStandardItemModel;
+class QLineEdit;
+class QSortFilterProxyModel;
+class TraceDialog;
+
+class FileSelectDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    FileSelectDialog(TraceDialog *trace_dig);
+    void SetModel(QStandardItemModel *model)
+    {
+        m_pkg_model = model;
+        m_pkg_box->setModel(m_pkg_model);
+        m_pkg_box->setCurrentIndex(-1);
+    }
+
+    void SetPackageList(std::vector<std::string> pkg_list) { m_pkg_list = std::move(pkg_list); }
+
+private slots:
+    void OnPackageSelected(const QString &);
+
+    // signals:
+    //     void PackageSelected(const QString &);
+
+private:
+    QLabel                  *m_pkg_label;
+    QStandardItemModel      *m_pkg_model;
+    QComboBox               *m_pkg_box;
+    std::vector<std::string> m_pkg_list;
+    std::string              m_cur_pkg;
+    TraceDialog             *m_trace_dig;
+};
 
 class TraceDialog : public QDialog
 {
@@ -37,12 +73,13 @@ public:
     ~TraceDialog();
     void UpdateDeviceList();
     void Cleanup() { Dive::GetDeviceManager().RemoveDevice(); }
+    void OnPackageSelected(const QString &);
 
 private slots:
     void OnDeviceSelected(const QString &);
-    void OnPackageSelected(const QString &);
     void OnStartClicked();
     void OnTraceClicked();
+    void OnOpenClicked();
 
 signals:
     void TraceAvailable(const QString &);
@@ -50,14 +87,18 @@ signals:
 private:
     void ShowErrorMessage(const std::string &err_msg);
 
-    QHBoxLayout        *m_capture_layout;
+    QHBoxLayout      *m_file_layout;
+    QLabel           *m_file_label;
+    QPushButton      *m_open_button;
+    QLineEdit        *m_cmd_input_box;
+    FileSelectDialog *m_file_model;
+
+    QHBoxLayout        *m_dev_layout;
     QLabel             *m_dev_label;
     QStandardItemModel *m_dev_model;
     QComboBox          *m_dev_box;
 
-    QLabel             *m_pkg_label;
     QStandardItemModel *m_pkg_model;
-    QComboBox          *m_pkg_box;
 
     QLabel             *m_app_type_label;
     QStandardItemModel *m_app_type_model;
@@ -72,4 +113,6 @@ private:
     std::string                   m_cur_dev;
     std::vector<std::string>      m_pkg_list;
     std::string                   m_cur_pkg;
+
+    FileSelectDialog *m_file_dig;
 };

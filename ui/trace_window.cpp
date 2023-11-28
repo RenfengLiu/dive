@@ -16,22 +16,13 @@
 
 #include "trace_window.h"
 #include <qcombobox.h>
-#include <qdebug.h>
 #include <qmessagebox.h>
-#include <QCheckBox>
 #include <QComboBox>
-#include <QCoreApplication>
 #include <QDebug>
-#include <QDir>
-#include <QFile>
 #include <QHBoxLayout>
-#include <QIcon>
 #include <QLabel>
-#include <QPixmap>
-#include <QPlainTextEdit>
+#include <QLineEdit>
 #include <QPushButton>
-#include <QSizePolicy>
-#include <QStandardItem>
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <filesystem>
@@ -43,15 +34,47 @@ namespace
 const std::vector<std::string> kAppTypes{ "Vulkan", "OpenXR" };
 }
 
+FileSelectDialog::FileSelectDialog(TraceDialog *trace_dig)
+{
+    m_pkg_label = new QLabel(tr("Packages:"));
+    m_pkg_box = new QComboBox();
+
+    QHBoxLayout *hlayout = new QHBoxLayout();
+    m_pkg_box->setCurrentIndex(-1);
+    m_pkg_box->setCurrentText("Please select a pckage");
+
+    hlayout->addWidget(m_pkg_label);
+    hlayout->addWidget(m_pkg_box);
+
+    setLayout(hlayout);
+
+    QObject::connect(m_pkg_box,
+                     SIGNAL(currentIndexChanged(const QString &)),
+                     this,
+                     SLOT(OnPackageSelected(const QString &)));
+}
+
+void FileSelectDialog::OnPackageSelected(const QString &s)
+{
+    if ((s.isEmpty() || m_pkg_box->currentIndex() == -1))
+    {
+        return;
+    }
+    qDebug() << "Package selected: " << s << " " << m_pkg_box->currentIndex();
+    m_cur_pkg = m_pkg_list[m_pkg_box->currentIndex()];
+    if (m_trace_dig)
+        m_trace_dig->OnPackageSelected(m_cur_pkg.c_str());
+}
 // =================================================================================================
 // TraceDialog
 // =================================================================================================
 TraceDialog::TraceDialog(QWidget *parent)
 {
     qDebug() << "TraceDialog created.";
-    m_capture_layout = new QHBoxLayout();
+    m_file_layout = new QHBoxLayout();
+    m_file_label = new QLabel(tr("Executable:"));
+    m_dev_layout = new QHBoxLayout();
     m_dev_label = new QLabel(tr("Devices:"));
-    m_pkg_label = new QLabel(tr("Packages:"));
     m_app_type_label = new QLabel(tr("Application Type:"));
 
     m_dev_model = new QStandardItemModel();
@@ -59,7 +82,6 @@ TraceDialog::TraceDialog(QWidget *parent)
     m_app_type_model = new QStandardItemModel();
 
     m_dev_box = new QComboBox();
-    m_pkg_box = new QComboBox();
     m_app_type_box = new QComboBox();
 
     m_button_layout = new QHBoxLayout();
@@ -85,35 +107,40 @@ TraceDialog::TraceDialog(QWidget *parent)
     m_dev_box->setCurrentIndex(-1);
     m_dev_box->setCurrentText("Please select a device");
 
-    m_pkg_box->setModel(m_pkg_model);
-    m_pkg_box->setCurrentIndex(-1);
-    m_pkg_box->setCurrentText("Please select a pckage");
+    m_open_button = new QPushButton("...", this);
+    m_cmd_input_box = new QLineEdit(this);
+
+    m_cmd_input_box->setText("abadfd");
+
+    m_file_layout->addWidget(m_file_label);
+    m_file_layout->addWidget(m_cmd_input_box);
+    m_file_layout->addWidget(m_open_button);
 
     m_app_type_box->setModel(m_app_type_model);
 
-    m_capture_layout->addWidget(m_dev_label);
-    m_capture_layout->addWidget(m_dev_box);
-    m_capture_layout->addWidget(m_pkg_label);
-    m_capture_layout->addWidget(m_pkg_box);
-    m_capture_layout->addWidget(m_app_type_label);
-    m_capture_layout->addWidget(m_app_type_box);
+    m_dev_layout->addWidget(m_dev_label);
+    m_dev_layout->addWidget(m_dev_box);
+
+    m_dev_layout->addWidget(m_app_type_label);
+    m_dev_layout->addWidget(m_app_type_box);
     m_button_layout->addWidget(m_run_button);
     m_button_layout->addWidget(m_capture_button);
 
-    m_main_layout->addLayout(m_capture_layout);
+    m_main_layout->addLayout(m_dev_layout);
+
+    m_main_layout->addLayout(m_file_layout);
     m_main_layout->addLayout(m_button_layout);
     setLayout(m_main_layout);
+
+    m_file_dig = new FileSelectDialog(this);
 
     QObject::connect(m_dev_box,
                      SIGNAL(currentIndexChanged(const QString &)),
                      this,
                      SLOT(OnDeviceSelected(const QString &)));
-    QObject::connect(m_pkg_box,
-                     SIGNAL(currentIndexChanged(const QString &)),
-                     this,
-                     SLOT(OnPackageSelected(const QString &)));
     QObject::connect(m_run_button, &QPushButton::clicked, this, &TraceDialog::OnStartClicked);
     QObject::connect(m_capture_button, &QPushButton::clicked, this, &TraceDialog::OnTraceClicked);
+    QObject::connect(m_open_button, &QPushButton::clicked, this, &TraceDialog::OnOpenClicked);
 }
 
 TraceDialog::~TraceDialog()
@@ -153,6 +180,14 @@ void TraceDialog::UpdateDeviceList()
             m_dev_box->setCurrentIndex(static_cast<int>(i));
         }
     }
+}
+
+void TraceDialog::OnOpenClicked()
+{
+    qDebug() << "OnOpenClicked";
+    m_file_dig->SetPackageList(m_pkg_list);
+    m_file_dig->SetModel(m_pkg_model);
+    m_file_dig->exec();
 }
 
 void TraceDialog::OnDeviceSelected(const QString &s)
@@ -198,24 +233,24 @@ void TraceDialog::OnDeviceSelected(const QString &s)
         return;
     }
     m_pkg_list = *ret;
+
     m_pkg_model->clear();
     for (size_t i = 0; i < m_pkg_list.size(); i++)
     {
         QStandardItem *item = new QStandardItem(m_pkg_list[i].c_str());
         m_pkg_model->appendRow(item);
     }
-    m_pkg_box->setCurrentIndex(-1);
 }
 
 void TraceDialog::OnPackageSelected(const QString &s)
 {
-    if ((s.isEmpty() || m_pkg_box->currentIndex() == -1))
-    {
-        return;
-    }
-    qDebug() << "Package selected: " << s << " " << m_pkg_box->currentIndex();
-    m_cur_pkg = m_pkg_list[m_pkg_box->currentIndex()];
-    m_run_button->setEnabled(true);
+    assert(m_cmd_input_box);
+    // if(m_cmd_input_box)
+    // m_cmd_input_box->setPlainText(s);
+    m_cmd_input_box->setText(s);
+    m_cmd_input_box->update();
+
+    qDebug() << "TraceDialog::OnPackageSelected: " << s;
 }
 
 void TraceDialog::OnStartClicked()
