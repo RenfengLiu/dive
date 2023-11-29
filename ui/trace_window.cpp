@@ -16,6 +16,7 @@
 
 #include "trace_window.h"
 #include <qcombobox.h>
+#include <qfiledialog.h>
 #include <qlineedit.h>
 #include <qmessagebox.h>
 #include <QComboBox>
@@ -53,29 +54,29 @@ FileSelectDialog::FileSelectDialog(TraceDialog *trace_dig)
     setLayout(hlayout);
 
     QObject::connect(m_pkg_box,
-                     SIGNAL(currentIndexChanged(const QString )),
+                     SIGNAL(currentIndexChanged(int)),
                      this,
-                     SLOT(OnPackageSelected(const QString )));
+                     SLOT(OnPackageSelected(int)));
 }
-    void FileSelectDialog::SetPackageList(std::vector<std::string> pkg_list)
-    {
-        qDebug() <<"SetPackageList: " ;
-        m_pkg_list = std::move(pkg_list);
-        m_pkg_model->clear();
-        for (size_t i = 0; i < m_pkg_list.size(); i++)
-        {
-            QStandardItem *item = new QStandardItem(m_pkg_list[i].c_str());
-            m_pkg_model->appendRow(item);
-        }
-    }
-
-void FileSelectDialog::OnPackageSelected(const QString &s)
+void FileSelectDialog::SetPackageList(std::vector<std::string> pkg_list)
 {
-    if ((s.isEmpty() || m_pkg_box->currentIndex() == -1))
+    qDebug() << "SetPackageList: ";
+    m_pkg_list = std::move(pkg_list);
+    m_pkg_model->clear();
+    for (size_t i = 0; i < m_pkg_list.size(); i++)
     {
-        return;
+        QStandardItem *item = new QStandardItem(m_pkg_list[i].c_str());
+        m_pkg_model->appendRow(item);
     }
-    qDebug() << "Package selected: " << s << " " << m_pkg_box->currentIndex();
+}
+
+void FileSelectDialog::OnPackageSelected(int index)
+{
+    // if ((s.isEmpty() || m_pkg_box->currentIndex() == -1))
+    // {
+    //     return;
+    // }
+    qDebug() << "Package selected: " << index << " " << m_pkg_box->currentIndex();
     m_cur_pkg = m_pkg_list[m_pkg_box->currentIndex()];
     if (m_trace_dig)
     {
@@ -203,8 +204,18 @@ void TraceDialog::UpdateDeviceList()
 void TraceDialog::OnOpenClicked()
 {
     qDebug() << "OnOpenClicked";
-    m_file_dig->exec();
+    // m_file_dig->exec();
     // m_cmd_input_box->setText(m_cur_pkg.c_str());
+    QStandardItemModel *model = new QStandardItemModel();
+    model->appendRow(new QStandardItem("1111"));
+    model->appendRow(new QStandardItem("222"));
+    model->appendRow(new QStandardItem("333"));
+
+    QIdentityProxyModel* proxy = new QIdentityProxyModel();
+    proxy->setSourceModel(model);
+    QFileDialog f;
+    f.setProxyModel(proxy);
+    f.getOpenFileName();
 }
 
 void TraceDialog::OnDeviceSelected(const QString &s)
@@ -264,9 +275,9 @@ void TraceDialog::OnDeviceSelected(const QString &s)
 
 void TraceDialog::OnPackageSelected(QString s)
 {
-    // m_cur_pkg_name = QString(s);
-    m_cur_pkg = s.toStdString();
-    m_cmd_input_box->setText(s);
+    m_cur_pkg_name = s;
+    // m_cur_pkg = m_cur_pkg_name.toStdString();
+    m_cmd_input_box->setText(m_cur_pkg_name);
 
     qDebug() << "TraceDialog::OnPackageSelected: " << m_cur_pkg.c_str();
 }

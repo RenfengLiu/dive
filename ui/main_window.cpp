@@ -55,6 +55,7 @@
 #include "shader_view.h"
 #include "text_file_view.h"
 #include "tree_view_combo_box.h"
+#include "file_proxy.h"
 
 static const int   kViewModeStringCount = 3;
 static const int   kEventViewModeStringCount = 3;
@@ -664,11 +665,23 @@ void MainWindow::OnCaptureTrigger()
     }
 }
 
+
 //--------------------------------------------------------------------------------------------------
 void MainWindow::OnCapture(bool is_capture_delayed)
 {
     m_trace_dig->UpdateDeviceList();
     m_trace_dig->exec();
+
+    // QStandardItemModel *model = new QStandardItemModel();
+    // model->appendRow(new QStandardItem("1111"));
+    // model->appendRow(new QStandardItem("222"));
+    // model->appendRow(new QStandardItem("333"));
+
+    // FileProxy *proxy = new FileProxy();
+    // proxy->setSourceModel(model);
+    // QFileDialog f;
+    // f.setProxyModel(proxy);
+    // f.getOpenFileName();
 }
 
 //--------------------------------------------------------------------------------------------------

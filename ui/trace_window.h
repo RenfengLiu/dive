@@ -45,7 +45,7 @@ public:
     void SetPackageList(std::vector<std::string> pkg_list);
 
 private slots:
-    void OnPackageSelected(const QString &);
+    void OnPackageSelected(int);
 
     // signals:
     //     void PackageSelected(const QString &);
