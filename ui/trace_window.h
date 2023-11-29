@@ -33,6 +33,7 @@ class QStandardItemModel;
 class QLineEdit;
 class QSortFilterProxyModel;
 class TraceDialog;
+class QLineEdit;
 
 class FileSelectDialog : public QDialog
 {
@@ -40,14 +41,8 @@ class FileSelectDialog : public QDialog
 
 public:
     FileSelectDialog(TraceDialog *trace_dig);
-    void SetModel(QStandardItemModel *model)
-    {
-        m_pkg_model = model;
-        m_pkg_box->setModel(m_pkg_model);
-        m_pkg_box->setCurrentIndex(-1);
-    }
 
-    void SetPackageList(std::vector<std::string> pkg_list) { m_pkg_list = std::move(pkg_list); }
+    void SetPackageList(std::vector<std::string> pkg_list);
 
 private slots:
     void OnPackageSelected(const QString &);
@@ -73,7 +68,7 @@ public:
     ~TraceDialog();
     void UpdateDeviceList();
     void Cleanup() { Dive::GetDeviceManager().RemoveDevice(); }
-    void OnPackageSelected(const QString &);
+    void OnPackageSelected( QString s);
 
 private slots:
     void OnDeviceSelected(const QString &);
@@ -87,11 +82,11 @@ signals:
 private:
     void ShowErrorMessage(const std::string &err_msg);
 
-    QHBoxLayout      *m_file_layout;
     QLabel           *m_file_label;
     QPushButton      *m_open_button;
     QLineEdit        *m_cmd_input_box;
     FileSelectDialog *m_file_model;
+    QHBoxLayout      *m_file_layout;
 
     QHBoxLayout        *m_dev_layout;
     QLabel             *m_dev_label;
@@ -113,6 +108,7 @@ private:
     std::string                   m_cur_dev;
     std::vector<std::string>      m_pkg_list;
     std::string                   m_cur_pkg;
+    QString m_cur_pkg_name;
 
     FileSelectDialog *m_file_dig;
 };

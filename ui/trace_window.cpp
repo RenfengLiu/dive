@@ -16,6 +16,7 @@
 
 #include "trace_window.h"
 #include <qcombobox.h>
+#include <qlineedit.h>
 #include <qmessagebox.h>
 #include <QComboBox>
 #include <QDebug>
@@ -24,6 +25,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QStandardItemModel>
+#include <QTextEdit>
 #include <QVBoxLayout>
 #include <filesystem>
 
@@ -38,8 +40,10 @@ FileSelectDialog::FileSelectDialog(TraceDialog *trace_dig)
 {
     m_pkg_label = new QLabel(tr("Packages:"));
     m_pkg_box = new QComboBox();
+    m_pkg_model = new QStandardItemModel();
 
     QHBoxLayout *hlayout = new QHBoxLayout();
+    m_pkg_box->setModel(m_pkg_model);
     m_pkg_box->setCurrentIndex(-1);
     m_pkg_box->setCurrentText("Please select a pckage");
 
@@ -49,10 +53,21 @@ FileSelectDialog::FileSelectDialog(TraceDialog *trace_dig)
     setLayout(hlayout);
 
     QObject::connect(m_pkg_box,
-                     SIGNAL(currentIndexChanged(const QString &)),
+                     SIGNAL(currentIndexChanged(const QString )),
                      this,
-                     SLOT(OnPackageSelected(const QString &)));
+                     SLOT(OnPackageSelected(const QString )));
 }
+    void FileSelectDialog::SetPackageList(std::vector<std::string> pkg_list)
+    {
+        qDebug() <<"SetPackageList: " ;
+        m_pkg_list = std::move(pkg_list);
+        m_pkg_model->clear();
+        for (size_t i = 0; i < m_pkg_list.size(); i++)
+        {
+            QStandardItem *item = new QStandardItem(m_pkg_list[i].c_str());
+            m_pkg_model->appendRow(item);
+        }
+    }
 
 void FileSelectDialog::OnPackageSelected(const QString &s)
 {
@@ -63,7 +78,10 @@ void FileSelectDialog::OnPackageSelected(const QString &s)
     qDebug() << "Package selected: " << s << " " << m_pkg_box->currentIndex();
     m_cur_pkg = m_pkg_list[m_pkg_box->currentIndex()];
     if (m_trace_dig)
-        m_trace_dig->OnPackageSelected(m_cur_pkg.c_str());
+    {
+        QString pkg = QString::fromStdString(m_cur_pkg);
+        m_trace_dig->OnPackageSelected(pkg);
+    }
 }
 // =================================================================================================
 // TraceDialog
@@ -108,8 +126,7 @@ TraceDialog::TraceDialog(QWidget *parent)
     m_dev_box->setCurrentText("Please select a device");
 
     m_open_button = new QPushButton("...", this);
-    m_cmd_input_box = new QLineEdit(this);
-
+    m_cmd_input_box = new QLineEdit();
     m_cmd_input_box->setText("abadfd");
 
     m_file_layout->addWidget(m_file_label);
@@ -141,6 +158,7 @@ TraceDialog::TraceDialog(QWidget *parent)
     QObject::connect(m_run_button, &QPushButton::clicked, this, &TraceDialog::OnStartClicked);
     QObject::connect(m_capture_button, &QPushButton::clicked, this, &TraceDialog::OnTraceClicked);
     QObject::connect(m_open_button, &QPushButton::clicked, this, &TraceDialog::OnOpenClicked);
+    // QObject::connect(this, &TraceDialog::PackageSelected, m_cmd_input_box, &QTextEdit::setText);
 }
 
 TraceDialog::~TraceDialog()
@@ -185,13 +203,13 @@ void TraceDialog::UpdateDeviceList()
 void TraceDialog::OnOpenClicked()
 {
     qDebug() << "OnOpenClicked";
-    m_file_dig->SetPackageList(m_pkg_list);
-    m_file_dig->SetModel(m_pkg_model);
     m_file_dig->exec();
+    // m_cmd_input_box->setText(m_cur_pkg.c_str());
 }
 
 void TraceDialog::OnDeviceSelected(const QString &s)
 {
+    qDebug() << "OnDeviceSelected s:" << s;
     if (s.isEmpty() || m_dev_box->currentIndex() == -1)
     {
         qDebug() << "No devices selected";
@@ -240,17 +258,17 @@ void TraceDialog::OnDeviceSelected(const QString &s)
         QStandardItem *item = new QStandardItem(m_pkg_list[i].c_str());
         m_pkg_model->appendRow(item);
     }
+    m_file_dig->SetPackageList(m_pkg_list);
+    // m_file_dig->SetModel(m_pkg_model);
 }
 
-void TraceDialog::OnPackageSelected(const QString &s)
+void TraceDialog::OnPackageSelected(QString s)
 {
-    assert(m_cmd_input_box);
-    // if(m_cmd_input_box)
-    // m_cmd_input_box->setPlainText(s);
+    // m_cur_pkg_name = QString(s);
+    m_cur_pkg = s.toStdString();
     m_cmd_input_box->setText(s);
-    m_cmd_input_box->update();
 
-    qDebug() << "TraceDialog::OnPackageSelected: " << s;
+    qDebug() << "TraceDialog::OnPackageSelected: " << m_cur_pkg.c_str();
 }
 
 void TraceDialog::OnStartClicked()
