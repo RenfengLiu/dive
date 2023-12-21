@@ -33,7 +33,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 file(GLOB HDR_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-include_directories(${THIRDPARTY_DIRECTORY}/Vulkan-Headers/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+include_directories(${THIRDPARTY_DIRECTORY}/Vulkan-Headers/include 
+  ${CMAKE_SOURCE_DIR} 
+  ${CMAKE_BINARY_DIR}
+  ${LibArchive_INCLUDE_DIRS})
 
 add_definitions(-DDIVE_GUI_TOOL) # suppress DIVE_PAL_CAPTURE in common.h
 add_definitions(-DLITTLEENDIAN_CPU)
@@ -41,7 +44,7 @@ add_definitions(-DLITTLEENDIAN_CPU)
 set(LIB_SRC_FILES ${SRC_FILES})
 list(FILTER LIB_SRC_FILES EXCLUDE REGEX "main.cpp")
 
-add_library(${PROJECT_NAME}_lib ${HDR_FILES} ${LIB_SRC_FILES})
+add_library(${PROJECT_NAME}_lib ${HDR_FILES} ${LIB_SRC_FILES} ${PM4_GENERATED_SRC_FILE} ${PM4_GENERATED_HDR_FILE})
 target_link_libraries(${PROJECT_NAME}_lib dive_core)
 
 add_executable(${PROJECT_NAME} ${HDR_FILES} "main.cpp")

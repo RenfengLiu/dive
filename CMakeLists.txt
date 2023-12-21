@@ -39,9 +39,7 @@ else()
 endif()
 if(BUILD_GRPC)
     set(GRPC_AS_SUBMODULE "ON")
-    
 else()
-
     if(MSVC AND EXISTS "${CMAKE_SOURCE_DIR}/prebuild/grpc/lib/grpc.tar.gz")
         # Unzip certain large debug gRPC libraries
         execute_process(
@@ -58,8 +56,8 @@ else()
     endif()
     set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/prebuild/grpc/")
     link_directories(${CMAKE_SOURCE_DIR}/prebuild/grpc/lib)
-
 endif()
+
 include(grpc.cmake)
 
 # `dive_core/common.h` is used in more places other than dive_core now
@@ -87,6 +85,7 @@ add_subdirectory(layer)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/dive_core)
 
 if(NOT ANDROID)
+    include(libarchive.cmake)
     add_subdirectory(dive_core)
     if (EXISTS "${CMAKE_SOURCE_DIR}/cli/CMakeLists.txt")
         add_subdirectory(cli)
@@ -99,11 +98,6 @@ endif()
 
 option(DIVE_UNIT_TESTS, "Build unit tests for dive")
 
-if(DIVE_UNIT_TESTS)
-    set(CATCH2_DIRECTORY "${CMAKE_SOURCE_DIR}/third_party/catch2")
-    add_subdirectory(third_party/catch2)
-    add_subdirectory(tests/unit_tests)
-endif()
 
 option(DIVE_PYTHON_BINDINGS "Build Python bindings for dive")
 
@@ -113,3 +107,7 @@ if(DIVE_PYTHON_BINDINGS)
     add_subdirectory(third_party/pybind11)
     add_subdirectory(pydive)
 endif()
+
+enable_testing()
+add_test(NAME TestLoadingTrace
+         COMMAND ${CMAKE_BINARY_DIR}/bin/divecli extract -o . ${CMAKE_SOURCE_DIR}/tests/traces/bloom-frame-0052.rd)
