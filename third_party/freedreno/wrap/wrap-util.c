@@ -23,6 +23,7 @@
 
 #include "wrap.h"
 
+// GOOGLE: Include Dive related header
 #include "dive-wrap.h"
 
 int IsCapturing();
@@ -91,8 +92,6 @@ static struct device_file *get_file(int device_fd)
 
 static struct device_file *add_file(int device_fd)
 {
-	LOGD("add_file: device_fd %d \n", device_fd);
-
 	if (device_fd == -1)
 		return &device_files[0];
 
@@ -100,9 +99,8 @@ static struct device_file *add_file(int device_fd)
 		struct device_file *df = &device_files[i];
 		if (df->device_fd == -1) {
 			df->device_fd = device_fd;
-			// LOGD("add device fd %d\n", device_fd);
+			// GOOGLE: Add debug log.
 			LOGD("add_file: device_fd %d, log_fd %p, i %d \n", device_fd, df->log_fd, i);
-
 			df->buffers_of_interest = (struct list)LIST_HEAD_INIT(df->buffers_of_interest);
 			return df;
 		}
@@ -173,6 +171,7 @@ void rd_start(int device_fd, const char *name, const char *fmt, ...)
 	const char *testnum;
 	va_list  args;
 
+	// GOOGLE: Use exsiting device_file if already being added.
 	struct device_file *df = get_file(device_fd);
 	if(df == NULL)
 	{
@@ -213,6 +212,7 @@ void rd_start(int device_fd, const char *name, const char *fmt, ...)
 	}
 
 	df->log_fd = LOG_OPEN_FILE(buf);
+	// GOOGLE: Add debug log.
 	LOGD("LOG_OPEN_FILE: device_fd %d, log_fd %p buf %s\n", df->device_fd, df->log_fd, buf);
 	if(df->log_fd == LOG_NULL_FILE) {
 		LOGD("Failed to LOG_OPEN_FILE (%s)", strerror(errno));
@@ -247,6 +247,7 @@ void rd_end(int device_fd)
 	struct device_file *df = get_file(device_fd);
 	if (df == NULL)
 		return;
+	// GOOGLE: Add debug log.
 	LOGD("rd_end remove device_fd %d, log_fd %p\n", device_fd, df->log_fd);
 	LOG_CLOSE_FILE(df->log_fd);
 
@@ -311,10 +312,11 @@ void rd_write_section(int device_fd, enum rd_sect_type type, const void *buf, in
 		assert(df != NULL);
 		printf("opened rd, %"LOG_PRI_FILE"\n", df->log_fd);
 	}
-
+	// GOOGLE: Don't capture if not in capturing mode.
 	if(!IsCapturing()) {
 		return;
 	}
+
 	pthread_mutex_lock(&write_lock);
 
 	rd_write(device_fd, &val, 4);
@@ -472,7 +474,7 @@ void * __rd_dlsym_helper(const char *name)
 	return func;
 }
 
-// GOOGLE: Close all opened trace fd;
+// GOOGLE: Close all opened trace fd
 void collect_trace_file(const char* capture_file_path)
 {
 	char full_path[PATH_MAX];
