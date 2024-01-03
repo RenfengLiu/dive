@@ -293,7 +293,7 @@ void rd_write_section(int device_fd, enum rd_sect_type type, const void *buf, in
 {
 	uint32_t val = ~0;
 
-	// GOOGLE: Write out rd file only when capturing flag is enabled.
+	// GOOGLE: cache gup_id and chip_id.
 	if (type == RD_GPU_ID) {
 		gpu_id = *(unsigned int *)buf;
 	}
