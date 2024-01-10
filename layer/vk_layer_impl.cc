@@ -23,7 +23,7 @@ limitations under the License.
 #endif
 
 #include <vulkan/vulkan_core.h>
-
+#include "capture_service/log.h"
 #include "capture_service/trace_mgr.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -36,6 +36,7 @@ VkResult QueuePresentKHR(PFN_vkQueuePresentKHR   pfn,
 {
     VkResult ret = pfn(queue, pPresentInfo);
     Dive::GetTraceMgr().OnNewFrame();
+    LOGD("QueuePresentKHR\n");
     return ret;
 }
 

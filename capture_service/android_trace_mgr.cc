@@ -23,20 +23,52 @@ limitations under the License.
 
 extern "C"
 {
-    void SetCaptureState(int state);
-    void SetCaptureName(const char* name, const char* frame_num);
+// void SetCaptureState(int state);
+// void SetCaptureName(const char* name, const char* frame_num);
+#include <dlfcn.h>
+    const static std::string kLibWrapPath = "/data/local/tmp/libwrap.so";
+    typedef void             (*set_capture_state)(int state);
+    typedef void             (*set_capture_name)(const char* name, const char* frame_num);
+
+    void* get_func(const char* name)
+    {
+        static void* layer = NULL;
+        layer = dlopen(kLibWrapPath.c_str(), RTLD_LAZY);
+        if (!layer)
+        {
+            LOGI("failed to laod layer code");
+            return NULL;
+        }
+        void* func = NULL;
+        func = dlsym(layer, name);
+        if (!func)
+        {
+            LOGI("failed to load func address");
+        }
+        LOGI("get_func %s succeed", name);
+        return func;
+    }
 }
 
 namespace
 {
-const static std::string kTraceFilePath{ "/sdcard/Download/" };
-}
+const static std::string kTraceFilePath{ "/data/local/tmp/" };
+
+// void (*SetCaptureState)(int) =
+//         (set_capture_state)get_func("SetCaptureState");
+// void (*SetCaptureName)(const char* name, const char* frame_num) =
+//         (set_capture_name)get_func("SetCaptureName");
+}  // namespace
 
 namespace Dive
 {
 
 void AndroidTraceManager::TraceByFrame()
 {
+    void (*SetCaptureState)(int) = (set_capture_state)get_func("SetCaptureState");
+    void (*SetCaptureName)(const char* name,
+                           const char* frame_num) = (set_capture_name)get_func("SetCaptureName");
+
     std::string path = kTraceFilePath + "trace-frame";
     std::string num = std::to_string(m_frame_num);
     char        full_path[256];
@@ -52,6 +84,9 @@ void AndroidTraceManager::TraceByFrame()
 
 void AndroidTraceManager::TraceByDuration()
 {
+    void (*SetCaptureState)(int) = (set_capture_state)get_func("SetCaptureState");
+    void (*SetCaptureName)(const char* name,
+                           const char* frame_num) = (set_capture_name)get_func("SetCaptureName");
     m_trace_num++;
     std::string path = kTraceFilePath + "trace";
     std::string num = std::to_string(m_trace_num);
@@ -72,7 +107,7 @@ void AndroidTraceManager::TraceByDuration()
     LOGD("Set capture file path as %s", GetTraceFilePath().c_str());
 
     // TODO: pass in this duration in stead of hard code a number.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     {
         absl::MutexLock lock(&m_state_lock);
         SetCaptureState(0);
@@ -133,6 +168,9 @@ bool AndroidTraceManager::ShouldStopTrace() const
 
 void AndroidTraceManager::OnTraceStart()
 {
+    void (*SetCaptureState)(int) = (set_capture_state)get_func("SetCaptureState");
+    void (*SetCaptureName)(const char* name,
+                           const char* frame_num) = (set_capture_name)get_func("SetCaptureName");
 #ifndef NDEBUG
     m_state_lock.AssertHeld();
 #endif
@@ -144,6 +182,9 @@ void AndroidTraceManager::OnTraceStart()
 
 void AndroidTraceManager::OnTraceStop()
 {
+    void (*SetCaptureState)(int) = (set_capture_state)get_func("SetCaptureState");
+    void (*SetCaptureName)(const char* name,
+                           const char* frame_num) = (set_capture_name)get_func("SetCaptureName");
 #ifndef NDEBUG
     m_state_lock.AssertHeld();
 #endif

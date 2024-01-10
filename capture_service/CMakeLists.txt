@@ -97,7 +97,7 @@ target_link_libraries(server PRIVATE
                       ${_PROTOBUF_LIBPROTOBUF})
 
 if(ANDROID)
-  target_link_libraries(service PRIVATE wrap)
+  target_link_libraries(service PRIVATE)
 else()
 
   add_library(client client.cc)

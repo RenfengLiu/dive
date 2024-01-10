@@ -27,7 +27,7 @@
 #include "dive-wrap.h"
 
 int IsCapturing();
-#define COMPRESS_TRACE
+// #define COMPRESS_TRACE
 #ifdef COMPRESS_TRACE
 #include <zlib.h>
 #define LOG_FILE_TYPE gzFile
@@ -100,7 +100,7 @@ static struct device_file *add_file(int device_fd)
 		if (df->device_fd == -1) {
 			df->device_fd = device_fd;
 			// GOOGLE: Add debug log.
-			LOGD("add_file: device_fd %d, log_fd %p, i %d \n", device_fd, df->log_fd, i);
+			LOGD("add_file: device_fd %d, log_fd %d, i %d \n", device_fd, df->log_fd, i);
 			df->buffers_of_interest = (struct list)LIST_HEAD_INIT(df->buffers_of_interest);
 			return df;
 		}
@@ -214,7 +214,7 @@ void rd_start(int device_fd, const char *name, const char *fmt, ...)
 
 	df->log_fd = LOG_OPEN_FILE(buf);
 	// GOOGLE: Add debug log.
-	LOGD("LOG_OPEN_FILE: device_fd %d, log_fd %p buf %s\n", df->device_fd, df->log_fd, buf);
+	LOGD("LOG_OPEN_FILE: device_fd %d, log_fd %d buf %s\n", df->device_fd, df->log_fd, buf);
 	if(df->log_fd == LOG_NULL_FILE) {
 		LOGD("Failed to LOG_OPEN_FILE (%s)", strerror(errno));
 	}
@@ -249,7 +249,7 @@ void rd_end(int device_fd)
 	if (df == NULL)
 		return;
 	// GOOGLE: Add debug log.
-	LOGD("rd_end remove device_fd %d, log_fd %p\n", device_fd, df->log_fd);
+	LOGD("rd_end remove device_fd %d, log_fd %d\n", device_fd, df->log_fd);
 	LOG_CLOSE_FILE(df->log_fd);
 
 	/* Rename file from rd_inprogress to rd */
@@ -498,7 +498,7 @@ void collect_trace_file(const char* capture_file_path)
 			struct device_file *df = get_file(fd);
 			if (df == NULL)
 					continue;
-			LOGD("device_fd %d, log_fd %p closed in collect_trace_file \n", fd, df->log_fd);
+			LOGD("device_fd %d, log_fd %d closed in collect_trace_file \n", fd, df->log_fd);
 			LOG_CLOSE_FILE(df->log_fd);
 			df->log_fd = LOG_NULL_FILE;
 			snprintf(cmd, PATH_MAX, "cat %s %s > %s", full_path, df->file_name, full_path);

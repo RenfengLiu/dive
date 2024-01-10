@@ -377,6 +377,7 @@ static void install_fd(const char *path, int fd)
 #endif
 		file_table[fd].is_3d = 1;
 		printf("found kgsl_3d0: %d\n", fd);
+		LOGI("found kgsl_3d0: %d\n", fd);
 	} else if (!strcmp(path, "/dev/kgsl-2d0")) {
 		file_table[fd].is_2d = 1;
 		printf("found kgsl_2d0: %d\n", fd);

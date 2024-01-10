@@ -1,0 +1,14 @@
+service surfaceflinger /system/bin/surfaceflinger
+    class core animation
+    setenv LD_PRELOAD /data/local/tmp/libwrap.so  
+    user system
+    ifup waln0
+    group graphics drmrpc readproc
+    file /data/local/tmp/trace-0001.rd wr
+    setfacl -m g:graphics:rw /data/local/tmp
+    capabilities SYS_NICE NET_ADMIN NET_RAW NET_BIND_SERVICE SYS_RESOURCE SYS_ADMIN FOWNER SETFCAP SYS_RAWIO SETPCAP DAC_READ_SEARCH CHOWN DAC_OVERRIDE DAC_READ_SEARCH FOWNER IPC_LOCK KILL NET_ADMIN NET_BIND_SERVICE NET_RAW SETUID SETGID
+    onrestart restart zygote
+    task_profiles SurfaceflingerCapacity SurfaceflingerPerformance
+    socket pdx/system/vr/display/client     stream 0666 system graphics u:object_r:pdx_display_client_endpoint_socket:s0
+    socket pdx/system/vr/display/manager    stream 0666 system graphics u:object_r:pdx_display_manager_endpoint_socket:s0
+    socket pdx/system/vr/display/vsync      stream 0666 system graphics u:object_r:pdx_display_vsync_endpoint_socket:s0

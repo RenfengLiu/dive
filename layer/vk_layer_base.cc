@@ -37,6 +37,9 @@ limitations under the License.
 namespace DiveLayer
 {
 
+static int instance_count = 0;
+std::mutex  g_cnt_mutex;
+
 // Declare our per-instance and per-device contexts.
 // These are created and initialized in vkCreateInstance and vkCreateDevice.
 struct InstanceData
@@ -48,9 +51,14 @@ struct InstanceData
 
     InstanceData()
     {
+        
+        std::lock_guard<std::mutex> lock(g_cnt_mutex);
+        instance_count++;
+    
+        LOGI("instance_count %d\n",instance_count);
         is_libwrap_loaded = IsLibwrapLoaded();
         LOGI("libwrap loaded: %d", is_libwrap_loaded);
-        if (is_libwrap_loaded)
+        if (is_libwrap_loaded && instance_count == 1)
         {
             server_thread = std::thread(Dive::server_main);
         }
@@ -211,7 +219,7 @@ VkResult DiveInterceptCreateInstance(const VkInstanceCreateInfo  *pCreateInfo,
         return result;
     }
 
-    LOGI("Created\n");
+    LOGI("Instance Created\n");
     auto id = std::make_unique<InstanceData>();
     id->instance = *pInstance;
     InitInstanceDispatchTable(*pInstance, pfn_get_instance_proc_addr, &id->dispatch_table);
@@ -253,7 +261,7 @@ VkResult DiveInterceptCreateDevice(VkPhysicalDevice             gpu,
         return result;
     }
 
-    LOGI("Created\n");
+    LOGI("Device Created\n");
     auto dd = std::make_unique<DeviceData>();
     dd->device = *pDevice;
     InitDeviceDispatchTable(*pDevice, pfn_next_device_proc_addr, &dd->dispatch_table);
