@@ -159,6 +159,7 @@ void AndroidTraceManager::OnTraceStop()
     m_state = TraceState::Finished;
     LOGI("Finished at frame %d", m_frame_num);
     GetPerfettoMgr().TraceEndFrame();
+    GetPerfettoMgr().StopSession();
 }
 
 }  // namespace Dive

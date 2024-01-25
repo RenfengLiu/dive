@@ -19,6 +19,7 @@ limitations under the License.
 #include <string>
 
 #include "task_queue.h"
+#include "perfetto.h"
 
 namespace Dive
 {
@@ -28,14 +29,17 @@ class PerfettoTraceManager
 public:
     PerfettoTraceManager();
     void StartNewSession(const std::string& trace_file_name);
+    void StopSession();
     void TraceStartFrame();
     void TraceEndFrame();
     void TraceFrame(uint32_t frame_num);
     void WaitForSessionStart();
 
 private:
-    void       InitializePerfetto();
-    TaskRunner m_tracing_worker;
+    void                                      InitializePerfetto();
+    TaskRunner                                m_tracing_worker;
+    std::unique_ptr<perfetto::TracingSession> m_tracing_session;
+    int m_fd;
 };
 
 PerfettoTraceManager& GetPerfettoMgr();
