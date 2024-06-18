@@ -52,29 +52,25 @@ bool IsLibwrapLoaded()
     return loaded;
 }
 
-ServerRunner::ServerRunner()
+uint32_t GetTriggerFrameNum()
 {
-    is_libwrap_loaded = IsLibwrapLoaded();
-    LOGI("libwrap loaded: %d", is_libwrap_loaded);
-    if (is_libwrap_loaded)
-    {
-        server_thread = std::thread(Dive::server_main);
-    }
-}
 
-ServerRunner::~ServerRunner()
-{
-    if (is_libwrap_loaded && server_thread.joinable())
+#if defined(__ANDROID__)
+    uint32_t frame_num = 0;
+    char     str_value[64];
+    int      len = __system_property_get("dive.trigger_frame_num", str_value);
+    if (len > 0)
     {
-        LOGI("Wait for server thread to join");
-        server_thread.join();
+        frame_num = static_cast<uint32_t>(std::stoul(str_value));
     }
-}
 
-ServerRunner &GetServerRunner()
-{
-    static ServerRunner runner;
-    return runner;
+    LOGD("trigger frame at %u", frame_num);
+
+    return frame_num;
+
+#endif
+
+    return 0;
 }
 
 }  // namespace DiveLayer

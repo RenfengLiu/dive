@@ -22,6 +22,7 @@ limitations under the License.
 #include "command_utils.h"
 
 #include <cassert>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -91,6 +92,8 @@ public:
     AndroidApplication *GetCurrentApplication() { return app.get(); }
     absl::Status        RetrieveTraceFile(const std::string &trace_file_path,
                                           const std::string &save_path);
+    absl::Status        SetTriggerFrameNum(uint32_t frame_to_trigger);
+    bool                IsFileExistOnDevice(std::string file_path);
 
 private:
     const std::string                   m_serial;

@@ -156,7 +156,7 @@ bool AndroidApplication::IsRunning() const
 
 bool AndroidApplication::IsProcessRunning(absl::string_view process_name) const
 {
-    auto res = m_dev.Adb().RunAndGetResult(absl::StrCat("shell pidof ", process_name), false);
+    auto res = m_dev.Adb().RunAndGetResult(absl::StrCat("shell pidof ", process_name));
     if (!res.ok())
         return false;
     std::string pid = *res;

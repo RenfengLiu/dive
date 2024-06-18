@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "absl/strings/str_cat.h"
-#include "perfetto_trace.h"
 #include "trace_mgr.h"
 
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <thread>
 
@@ -46,8 +46,6 @@ void AndroidTraceManager::TraceByFrame()
 
     SetTraceFilePath(std::string(full_path));
     LOGD("Set capture file path as %s", GetTraceFilePath().c_str());
-    std::string perfetto_trace_path = absl::StrCat(full_path, ".perfetto");
-    GetPerfettoMgr().StartNewSession(perfetto_trace_path);
     SetCaptureName(path.c_str(), num.c_str());
     {
         absl::MutexLock lock(&m_state_lock);
@@ -82,6 +80,14 @@ void AndroidTraceManager::TraceByDuration()
         absl::MutexLock lock(&m_state_lock);
         SetCaptureState(0);
         m_state = TraceState::Finished;
+    }
+}
+
+void AndroidTraceManager::TriggerByFrame(uint32_t trigger_frame_num)
+{
+    if (m_frame_num > 0 && trigger_frame_num == m_frame_num)
+    {
+        TraceByFrame();
     }
 }
 
@@ -140,7 +146,6 @@ bool AndroidTraceManager::ShouldStopTrace() const
 
 void AndroidTraceManager::OnTraceStart()
 {
-    GetPerfettoMgr().TraceStartFrame();
 #ifndef NDEBUG
     m_state_lock.AssertHeld();
 #endif
@@ -158,7 +163,6 @@ void AndroidTraceManager::OnTraceStop()
     SetCaptureState(0);
     m_state = TraceState::Finished;
     LOGI("Finished at frame %d", m_frame_num);
-    GetPerfettoMgr().TraceEndFrame();
 }
 
 }  // namespace Dive

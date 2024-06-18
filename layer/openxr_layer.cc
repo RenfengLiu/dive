@@ -50,18 +50,13 @@ struct XrInstanceData
 {
     XrInstance               instance;
     XrGeneratedDispatchTable dispatch_table;
-    ServerRunner            &server;
-
-    XrInstanceData() :
-        server(GetServerRunner())
-    {
-    }
 };
 
 struct XrSessionData
 {
     XrSession                session;
     XrGeneratedDispatchTable dispatch_table;
+    uint32_t                 trigger_frame_num;
 };
 
 static thread_local XrInstanceData *last_used_xr_instance_data = nullptr;
@@ -121,6 +116,7 @@ XRAPI_ATTR XrResult XRAPI_CALL ApiDiveLayerXrEndFrame(XrSession             sess
         LOGE("sess_data is null in ApiDiveLayerXrEndFrame\n");
     }
     Dive::GetTraceMgr().OnNewFrame();
+    Dive::GetTraceMgr().TriggerByFrame(sess_data->trigger_frame_num);
 
     return result;
 }
@@ -230,6 +226,9 @@ XRAPI_ATTR XrResult XRAPI_CALL ApiDiveLayerXrCreateSession(XrInstance           
 
     auto id = std::make_unique<XrSessionData>();
     id->session = *session;
+    id->trigger_frame_num = GetTriggerFrameNum();
+    LOGI("Dive set to trigger capture at frame %u", id->trigger_frame_num);
+
     id->dispatch_table = inst_data->dispatch_table;
     {
 

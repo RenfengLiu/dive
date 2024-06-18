@@ -37,6 +37,7 @@ class TraceManager
 {
 public:
     TraceManager();
+    virtual void TriggerByFrame(uint32_t frame_num) {}
     virtual void TriggerTrace() {}
     virtual void OnNewFrame() {}
     virtual void WaitForTraceDone() {}
@@ -61,6 +62,8 @@ private:
 class AndroidTraceManager : public TraceManager
 {
 public:
+    virtual void TriggerByFrame(uint32_t frame_num) override;
+
     virtual void TriggerTrace() override;
     virtual void OnNewFrame() override;
     virtual void WaitForTraceDone() override;

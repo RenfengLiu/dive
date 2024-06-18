@@ -364,6 +364,20 @@ absl::Status DeviceManager::Cleanup(const std::string &serial, const std::string
     return absl::OkStatus();
 }
 
+absl::Status AndroidDevice::SetTriggerFrameNum(uint32_t frame_to_trigger)
+{
+    auto ret = Adb().Run(
+    absl::StrFormat("shell setprop dive.trigger_frame_num %u", frame_to_trigger));
+    ret.Update(Adb().Run("shell getprop dive.trigger_frame_num "));
+    return ret;
+}
+
+bool AndroidDevice::IsFileExistOnDevice(std::string file_path)
+{
+    auto ret = Adb().Run(absl::StrFormat("shell ls %s", file_path));
+    return ret.ok();
+}
+
 absl::Status AndroidDevice::RetrieveTraceFile(const std::string &trace_file_path,
                                               const std::string &save_path)
 {
