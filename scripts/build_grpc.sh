@@ -41,6 +41,7 @@ cmake -DgRPC_BUILD_CODEGEN=ON \
     -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
     -DABSL_ENABLE_INSTALL=ON \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
     -G"Ninja" \
     ${PROJECT_ROOT}/third_party/grpc/
 # cmake --build ${BUILD_DIR} --config=Release -j

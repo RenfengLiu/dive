@@ -149,6 +149,7 @@ void RunServer(uint16_t port)
 
 int server_main()
 {
+    std::this_thread::sleep_for(std::chrono::seconds(15));
     RunServer(absl::GetFlag(FLAGS_port));
     return 0;
 }

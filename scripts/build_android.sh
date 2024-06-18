@@ -43,6 +43,8 @@ do
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=NEVER \
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER \
         -DDIVE_ENABLE_PERFETTO=OFF \
+        -DANDROID_STL=c++_static \
+        -DBUILD_SHARED_LIBS=OFF \
         ${SRC_DIR} || exit 1
 
     cmake --build . --config=${build} -j || exit 1
