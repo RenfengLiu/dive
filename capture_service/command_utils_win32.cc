@@ -14,9 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "absl/strings/str_format.h"
 #include "command_utils.h"
 
 #include <vector>
+#include "absl/flags/flag.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
@@ -25,6 +27,8 @@ limitations under the License.
 #    error "Build this for Win32 platform only"
 #endif
 #include <windows.h>
+
+ABSL_FLAG(bool, force_output, false, "whether force to print out the command and its output.");
 
 namespace Dive
 {
@@ -144,23 +148,29 @@ absl::StatusOr<std::string> RunCommand(const std::string &command, bool quiet)
 
     WaitForSingleObject(pi.hProcess, INFINITE);
     int ret = 0;
-    GetExitCodeProcess(pi.hProcess, (LPDWORD)&ret);
+    if (!GetExitCodeProcess(pi.hProcess, (LPDWORD)&ret))
+    {
+        err_msg = absl::StrFormat("Command `%s` failed with GetExitCodeProcess failed \n",
+                                  command.c_str());
+        LOGE("%s\n", err_msg.c_str());
+        return absl::InternalError(err_msg);
+    }
     LOGD("result->m_ret is %d\n", ret);
-    if (!quiet)
+    bool log_output = !quiet || absl::GetFlag(FLAGS_force_output);
+    if (log_output)
     {
         LOGI("Command: %s\n Output: %s\n", command.c_str(), output.c_str());
     }
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    if (ret != 0 && !quiet)
+    if (ret != 0)
     {
 
         err_msg = absl::StrFormat("Command `%s` failed with return code %d, error: %s \n",
                                   command.c_str(),
                                   ret,
                                   output);
-
         LOGE("%s\n", err_msg.c_str());
         return absl::InternalError(err_msg);
     }
