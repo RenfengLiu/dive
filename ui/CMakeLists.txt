@@ -62,7 +62,7 @@ add_executable(${PROJECT_NAME} WIN32 ${HDR_FILES} ${SRC_FILES} ${COMMON_HDR_FILE
 # Use the Widgets module from Qt 5
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
 
-target_link_libraries(${PROJECT_NAME} dive_core device_mgr client)
+target_link_libraries(${PROJECT_NAME} dive_core device_mgr)
 # std::filesystem needs to link with libstdc++fs for g++ before 9.0
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
   target_link_libraries(${PROJECT_NAME}  stdc++fs)
@@ -90,7 +90,6 @@ endif()
 
 # Collect 3rd party licenses
 file(COPY ${CMAKE_SOURCE_DIR}/third_party/Qt/LICENSE.LGPLv3 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/licenses/Qt/)
-file(COPY ${CMAKE_SOURCE_DIR}/third_party/catch2/LICENSE.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/licenses/catch2/)
 file(COPY ${CMAKE_SOURCE_DIR}/third_party/pybind11/LICENSE DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/licenses/pybind11/)
 
 # Generate license NOTICE file

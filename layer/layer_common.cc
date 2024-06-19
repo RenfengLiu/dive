@@ -21,7 +21,6 @@ limitations under the License.
 #include <cstring>
 
 #include "capture_service/log.h"
-#include "capture_service/server.h"
 
 namespace DiveLayer
 {

@@ -36,7 +36,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "capture_service/client.h"
+// #include "capture_service/client.h"
 #include "capture_service/device_mgr.h"
 
 namespace
@@ -422,6 +422,7 @@ void ProgressBarWorker::run()
 
 void TraceWorker::run()
 {
+    #if 0
     const std::string server_str = "localhost:19999";
 
     auto device = Dive::GetDeviceManager().GetDevice();
@@ -538,6 +539,7 @@ void TraceWorker::run()
 
     QString capture_saved_path(target.generic_string().c_str());
     emit    TraceAvailable(capture_saved_path);
+    #endif
 }
 
 void TraceDialog::OnDevListRefresh()

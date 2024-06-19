@@ -29,7 +29,6 @@ limitations under the License.
 #include <vector>
 
 #include "capture_service/log.h"
-#include "capture_service/server.h"
 #include "layer_common.h"
 #include "vk_dispatch.h"
 #include "vk_layer_impl.h"

@@ -26,6 +26,8 @@ if(MSVC)
 endif()
 set(THIRDPARTY_DIRECTORY "${CMAKE_SOURCE_DIR}/third_party")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
+set(ABSL_PROPAGATE_CXX_STD ON)
+add_subdirectory(third_party/abseil-cpp)
 
 if(ANDROID)
     add_subdirectory(third_party/freedreno)
@@ -37,28 +39,8 @@ if(MSVC)
 else()
     option(BUILD_GRPC "Build gRPC from source" "ON")
 endif()
-if(BUILD_GRPC)
-    set(GRPC_AS_SUBMODULE "ON")
-else()
-    if(MSVC AND EXISTS "${CMAKE_SOURCE_DIR}/prebuild/grpc/lib/grpc.tar.gz")
-        # Unzip certain large debug gRPC libraries
-        execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/grpcd.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/grpc.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/grpc_unsecured.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/grpc_unsecure.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/grpc_authorization_providerd.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/libprotocd.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/libprotoc.tar.gz
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib/libprotobufd.tar.gz
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/grpc/lib
-        )
-    endif()
-    set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/prebuild/grpc/")
-    link_directories(${CMAKE_SOURCE_DIR}/prebuild/grpc/lib)
-endif()
 
-include(grpc.cmake)
+
 
 # `dive_core/common.h` is used in more places other than dive_core now
 add_definitions(-DDIVE_GUI_TOOL)
@@ -80,8 +62,6 @@ if(DIVE_NO_DISASSEMBLY)
     add_definitions(-DDIVE_NO_DISASSEMBLY=1)
 endif()
 
-option(DIVE_ENABLE_PERFETTO, "Enalbe functionality to get perfetto trace." OFF)
-include(perfetto.cmake)
 
 add_subdirectory(capture_service)
 add_subdirectory(layer)
