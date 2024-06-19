@@ -20,7 +20,7 @@ readonly PROJECT_ROOT="$(readlink -f ${PROJECT_ROOT})"
 readonly BUILD_DIR_ROOT=${PROJECT_ROOT}/build_android
 readonly SRC_DIR=${PROJECT_ROOT}
 readonly BUILD_TYPE=(Debug Release)
-
+echo "ANDROID_NDK_HOME is " $ANDROID_NDK_HOME
 for build in "${BUILD_TYPE[@]}"
 do
     BUILD_DIR=${BUILD_DIR_ROOT}/${build}

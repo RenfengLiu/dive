@@ -18,7 +18,7 @@ set PROJECT_ROOT=%~dp0\..
 set BUILD_TYPE=Debug Release
 set SRC_DIR=%PROJECT_ROOT%
 set startTime=%time%
-
+echo "ANDROID_NDK_HOME is " %ANDROID_NDK_HOME%
 (for %%b in (%BUILD_TYPE%) do (
     setlocal enabledelayedexpansion
     echo %%b
@@ -34,10 +34,6 @@ set startTime=%time%
         -DCMAKE_SYSTEM_NAME=Android ^
         -DANDROID_ABI=arm64-v8a ^
         -DANDROID_PLATFORM=android-26 ^
-        -DgRPC_BUILD_CODEGEN=OFF ^
-        -Dprotobuf_BUILD_PROTOC_BINARIES=OFF ^
-        -DCARES_BUILD_TOOLS=OFF ^
-        -DCARES_INSTALL=OFF ^
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=NEVER ^
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER ^
         %SRC_DIR%
