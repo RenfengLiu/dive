@@ -72,4 +72,21 @@ uint32_t GetTriggerFrameNum()
     return 0;
 }
 
+std::string GetTriggerFrameTimeStr()
+{
+    std::string time_str;
+
+#if defined(__ANDROID__)
+    char str_value[64];
+    int  len = __system_property_get("dive.trigger_frame_timestamp", str_value);
+    if (len > 0)
+    {
+        time_str = std::string(str_value);
+    }
+    LOGD("trigger frame at time %s", time_str.c_str());
+#endif
+
+    return time_str;
+}
+
 }  // namespace DiveLayer

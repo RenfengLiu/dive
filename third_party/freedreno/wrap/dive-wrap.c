@@ -42,8 +42,10 @@ extern void SetCaptureState(int state)
 		if (!num)
 			num = "0";
 		int frame_num = atoi(num);
+		const char* time_str = getenv("TIMESTR");
+		if(!time_str) time_str = "";
 		char path[1024];
-		snprintf(path, 1024, "/sdcard/Download/trace-frame-%04u.rd", frame_num);		
+		snprintf(path, 1024, "/sdcard/Download/trace-frame-%04u-%s.rd", frame_num, time_str);		
 		collect_trace_file(path);
 	}
 		
@@ -55,13 +57,17 @@ void StartCapture() { SetCaptureState(1); }
 
 void StopCapture() { SetCaptureState(0); }
 
-extern void SetCaptureName(const char* name, const char* frame_num) 
+
+extern void SetCaptureName(const char* name, const char* frame_num, const char* time_str) 
 {
 	if(name) {
 		setenv("TESTNAME", name, 1);
 	}
 	if(frame_num) {
 		setenv("TESTNUM", frame_num, 1);
+	}
+	if(time_str) {
+		setenv("TIMESTR", time_str, 1);
 	}
 	// Cap dump size per buffer as 128K.
 	// TODO(renfeng): find out doc where states the max size of command stream.

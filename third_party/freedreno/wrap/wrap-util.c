@@ -169,6 +169,7 @@ void rd_start(int device_fd, const char *name, const char *fmt, ...)
 	static int cnt = 0;
 	int n = cnt++;
 	const char *testnum;
+	const char *time_str;
 	va_list  args;
 
 	// GOOGLE: Use exsiting device_file if already being added.
@@ -193,10 +194,15 @@ void rd_start(int device_fd, const char *name, const char *fmt, ...)
 	}
 
 	testnum = getenv("TESTNUM");
+	time_str = getenv("TIMESTR");
+	if(!time_str){
+		time_str = "";
+		LOGI("time_str not provided");
+	}
 	if (testnum) {
 		n = strtol(testnum, NULL, 0);
 		// GOOGLE: add open_count to the filename.
-		sprintf(buf, "%s-%04u-%d.rd.inprogress", name, n, df->open_count);
+		sprintf(buf, "%s-%04u-%d-%s.rd.inprogress", name, n, df->open_count, time_str);
 	} else {
 		if (device_fd == -1) {
 			if (df->open_count == 0)

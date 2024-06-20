@@ -17,7 +17,7 @@ limitations under the License.
 #pragma once
 
 #include <cstdint>
-#include <thread>
+#include <string>
 
 namespace DiveLayer
 {
@@ -29,6 +29,6 @@ inline uintptr_t DataKey(const void *object)
 
 bool IsLibwrapLoaded();
 
-uint32_t GetTriggerFrameNum();
-
+uint32_t    GetTriggerFrameNum();
+std::string GetTriggerFrameTimeStr();
 }  // namespace DiveLayer

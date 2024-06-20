@@ -26,7 +26,7 @@ limitations under the License.
 extern "C"
 {
     void SetCaptureState(int state);
-    void SetCaptureName(const char* name, const char* frame_num);
+    void SetCaptureName(const char* name, const char* frame_num, const char* frame_time_stamp);
 }
 
 namespace
@@ -37,16 +37,35 @@ const static std::string kTraceFilePath{ "/sdcard/Download/" };
 namespace Dive
 {
 
+std::string GetTriggerFrameTimeStr()
+{
+    std::string time_str;
+
+#if defined(__ANDROID__)
+    char str_value[64];
+    int  len = __system_property_get("dive.trigger_frame_timestamp", str_value);
+    if (len > 0)
+    {
+        time_str = std::string(str_value);
+    }
+    LOGD("trigger frame at time %s", time_str.c_str());
+#endif
+
+    return time_str;
+}
+
 void AndroidTraceManager::TraceByFrame()
 {
     std::string path = kTraceFilePath + "trace-frame";
     std::string num = std::to_string(m_frame_num);
-    char        full_path[256];
-    sprintf(full_path, "%s-%04u.rd", path.c_str(), m_frame_num);
+    std::string time_str = GetTriggerFrameTimeStr();
+
+    char full_path[256];
+    sprintf(full_path, "%s-%04u-%s.rd", path.c_str(), m_frame_num, time_str.c_str());
 
     SetTraceFilePath(std::string(full_path));
     LOGD("Set capture file path as %s", GetTraceFilePath().c_str());
-    SetCaptureName(path.c_str(), num.c_str());
+    SetCaptureName(path.c_str(), num.c_str(), time_str.c_str());
     {
         absl::MutexLock lock(&m_state_lock);
         m_state = TraceState::Triggered;
@@ -58,9 +77,11 @@ void AndroidTraceManager::TraceByDuration()
     m_trace_num++;
     std::string path = kTraceFilePath + "trace";
     std::string num = std::to_string(m_trace_num);
-    char        full_path[256];
+    std::string time_str = GetTriggerFrameTimeStr();
+
+    char full_path[256];
     sprintf(full_path, "%s-%04u.rd", path.c_str(), m_trace_num);
-    SetCaptureName(path.c_str(), num.c_str());
+    SetCaptureName(path.c_str(), num.c_str(), time_str.c_str());
     {
         absl::MutexLock lock(&m_state_lock);
         m_state = TraceState::Triggered;

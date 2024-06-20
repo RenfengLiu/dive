@@ -27,5 +27,6 @@ limitations under the License.
 
 int IsCapturing() ;
 extern void SetCaptureState(int state);
-extern void SetCaptureName(const char* name, const char* frame_num);
+// extern void SetCaptureName(const char* name, const char* frame_num);
+extern void SetCaptureFullPath(const char* full_path);
 #endif

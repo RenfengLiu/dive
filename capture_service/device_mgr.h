@@ -92,7 +92,7 @@ public:
     AndroidApplication *GetCurrentApplication() { return app.get(); }
     absl::Status        RetrieveTraceFile(const std::string &trace_file_path,
                                           const std::string &save_path);
-    absl::Status        SetTriggerFrameNum(uint32_t frame_to_trigger);
+    absl::Status        SetTriggerFrameNum(uint32_t frame_to_trigger, const std::string &ts);
     bool                IsFileExistOnDevice(std::string file_path);
 
 private:

@@ -363,14 +363,21 @@ absl::Status DeviceManager::Cleanup(const std::string &serial, const std::string
     {
         RETURN_IF_ERROR(adb.Run(absl::StrFormat("shell setprop wrap.%s \\\"\\\"", package)));
     }
+
+    RETURN_IF_ERROR(adb.Run("shell setprop dive.trigger_frame_timestamp \\\"\\\""));
+    RETURN_IF_ERROR(adb.Run("shell setprop dive.trigger_frame_num \\\"\\\""));
+
     return absl::OkStatus();
 }
 
-absl::Status AndroidDevice::SetTriggerFrameNum(uint32_t frame_to_trigger)
+absl::Status AndroidDevice::SetTriggerFrameNum(uint32_t frame_to_trigger, const std::string &ts)
 {
     auto ret = Adb().Run(
     absl::StrFormat("shell setprop dive.trigger_frame_num %u", frame_to_trigger));
-    ret.Update(Adb().Run("shell getprop dive.trigger_frame_num "));
+    ret.Update(Adb().Run("shell getprop dive.trigger_frame_num"));
+    ret.Update(Adb().Run(absl::StrFormat("shell setprop dive.trigger_frame_timestamp %s", ts)));
+    ret.Update(Adb().Run("shell getprop dive.trigger_frame_timestamp"));
+
     return ret;
 }
 

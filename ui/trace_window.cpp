@@ -422,7 +422,7 @@ void ProgressBarWorker::run()
 
 void TraceWorker::run()
 {
-    #if 0
+#if 0
     const std::string server_str = "localhost:19999";
 
     auto device = Dive::GetDeviceManager().GetDevice();
@@ -513,7 +513,7 @@ void TraceWorker::run()
         ShowErrorMessage(err_msg);
         return;
     }
-#if defined(DIVE_ENABLE_PERFETTO)
+#    if defined(DIVE_ENABLE_PERFETTO)
     // Download perfetto trace file
     std::string on_device_path = *trace_file_path;
     on_device_path += ".perfetto";
@@ -530,7 +530,7 @@ void TraceWorker::run()
         ShowErrorMessage(err_msg);
         return;
     }
-#endif
+#    endif
     int64_t time_used_to_load_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::steady_clock::now() - begin)
                                    .count();
@@ -539,7 +539,7 @@ void TraceWorker::run()
 
     QString capture_saved_path(target.generic_string().c_str());
     emit    TraceAvailable(capture_saved_path);
-    #endif
+#endif
 }
 
 void TraceDialog::OnDevListRefresh()

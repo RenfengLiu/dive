@@ -26,6 +26,7 @@ limitations under the License.
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "android_application.h"
 #include "device_mgr.h"
 
@@ -92,7 +93,19 @@ void print_usage()
     std::cout << absl::ProgramUsageMessage() << std::endl;
 }
 
-bool run_package(Dive::DeviceManager& mgr, const std::string& app_type, const std::string& package)
+std::string get_timestr()
+{
+    auto               tm = std::time(nullptr);
+    auto               ltm = *std::localtime(&tm);
+    std::ostringstream oss;
+    oss << std::put_time(&ltm, "%Y%m%d-%H%M%S");
+    return oss.str();
+}
+
+bool run_package(Dive::DeviceManager& mgr,
+                 const std::string&   app_type,
+                 const std::string&   package,
+                 const std::string&   time_str)
 {
     std::string serial = absl::GetFlag(FLAGS_device);
     uint32_t    trigger_frame_num = absl::GetFlag(FLAGS_trigger_frame_num);
@@ -116,7 +129,8 @@ bool run_package(Dive::DeviceManager& mgr, const std::string& app_type, const st
         std::cout << "Failed to setup device, error: " << ret.message() << std::endl;
         return false;
     }
-    ret = dev->SetTriggerFrameNum(trigger_frame_num);
+
+    ret = dev->SetTriggerFrameNum(trigger_frame_num, time_str);
     if (!ret.ok())
     {
         std::cout << "Failed to setup prop to trigger the capture.";
@@ -146,14 +160,16 @@ bool run_package(Dive::DeviceManager& mgr, const std::string& app_type, const st
     return ret.ok();
 }
 
-bool wait_capture_done(Dive::DeviceManager& mgr, uint32_t trigger_frame_num)
+bool wait_capture_done(Dive::DeviceManager& mgr,
+                       uint32_t             trigger_frame_num,
+                       const std::string    time_str)
 {
     std::string download_path = absl::GetFlag(FLAGS_download_path);
     std::string input;
-
-    char trace_file_path[256];
-    sprintf(trace_file_path, "/sdcard/Download/trace-frame-%04u.rd", trigger_frame_num);
-    auto dev = mgr.GetDevice();
+    std::string trace_file_path = absl::StrFormat("/sdcard/Download/trace-frame-%04u-%s.rd",
+                                                  trigger_frame_num,
+                                                  time_str);
+    auto        dev = mgr.GetDevice();
     if (dev == nullptr)
     {
         std::cout << "dev is null";
@@ -172,7 +188,7 @@ bool wait_capture_done(Dive::DeviceManager& mgr, uint32_t trigger_frame_num)
         std::this_thread::sleep_for(std::chrono::seconds(2));
         if (dev->IsFileExistOnDevice(trace_file_path))
         {
-            std::cout << std::endl <<"Capture file is ready" << std::endl;
+            std::cout << std::endl << "Capture file is ready" << std::endl;
             std::filesystem::path p(trace_file_path);
             std::filesystem::path target_download_path(download_path);
             if (!std::filesystem::exists(target_download_path))
@@ -209,10 +225,11 @@ bool run_and_capture(Dive::DeviceManager& mgr,
                      const std::string&   package)
 {
 
-    uint32_t trigger_frame_num = absl::GetFlag(FLAGS_trigger_frame_num);
+    uint32_t    trigger_frame_num = absl::GetFlag(FLAGS_trigger_frame_num);
+    std::string time_str = get_timestr();
 
-    run_package(mgr, app_type, package);
-    wait_capture_done(mgr, trigger_frame_num);
+    run_package(mgr, app_type, package, time_str);
+    wait_capture_done(mgr, trigger_frame_num, time_str);
 
     std::cout << "Press Enter to exit" << std::endl;
     std::string input;
