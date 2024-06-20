@@ -153,6 +153,8 @@ absl::Status AndroidDevice::SetupDevice()
 {
     RETURN_IF_ERROR(Adb().Run("shell setenforce 0"));
     RETURN_IF_ERROR(Adb().Run("shell getenforce"));
+    // RETURN_IF_ERROR(Adb().Run("shell stop"));
+    // RETURN_IF_ERROR(Adb().Run("shell start"));
 
     RETURN_IF_ERROR(Adb().Run(absl::StrFormat("push %s %s",
                                               ResolveAndroidLibPath(kWrapLibName).generic_string(),
