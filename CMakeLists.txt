@@ -31,8 +31,6 @@ add_subdirectory(third_party/abseil-cpp)
 
 if(ANDROID)
     add_subdirectory(third_party/freedreno)
-    find_program(_PROTOBUF_PROTOC protoc PATHS ${CMAKE_SOURCE_DIR}/bin)
-    find_program(_GRPC_CPP_PLUGIN grpc_cpp_plugin PATHS ${CMAKE_SOURCE_DIR}/bin)
 endif()
 if(MSVC)
     option(BUILD_GRPC "Build gRPC from source" "OFF")
