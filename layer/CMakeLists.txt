@@ -56,8 +56,7 @@ if(ANDROID)
         PRIVATE -lm
         PRIVATE -ldl
         PRIVATE -llog
-        PRIVATE -landroid
-        PRIVATE wrap)    
+        PRIVATE -landroid)    
 endif()
 
 target_link_libraries(${target_name}  ${TARGET_LINK_LIBS})

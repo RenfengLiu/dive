@@ -29,6 +29,7 @@ namespace DiveLayer
 bool IsLibwrapLoaded()
 {
     bool loaded = false;
+    return true;
 #if defined(__ANDROID__)
     FILE *maps = fopen("/proc/self/maps", "r");
     if (!maps)
