@@ -71,7 +71,7 @@ if(DIVE_ENABLE_PERFETTO)
 else()
   set(PERFETTO_DIVE_IMP_SRC perfetto_trace_empty.cc)
 endif()
-  add_library(service
+  add_library(service SHARED
               service.cc
               trace_mgr.cc
               android_trace_mgr.cc
@@ -83,7 +83,7 @@ endif()
     target_link_libraries(service PRIVATE  perfetto)
   endif()
 else()
-  add_library(service
+  add_library(service SHARED
               service.cc
               trace_mgr.cc
               ${COMMAND_UTILS_SRC})

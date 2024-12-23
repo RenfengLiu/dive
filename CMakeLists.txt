@@ -26,7 +26,7 @@ if(MSVC)
 endif()
 set(THIRDPARTY_DIRECTORY "${CMAKE_SOURCE_DIR}/third_party")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
-
+add_compile_definitions(ABSL_MIN_LOG_LEVEL=-1)
 if(ANDROID)
     add_subdirectory(third_party/freedreno)
     find_program(_PROTOBUF_PROTOC protoc PATHS ${CMAKE_SOURCE_DIR}/bin)

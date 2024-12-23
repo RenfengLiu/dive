@@ -46,7 +46,6 @@ add_definitions(-DLAYERNAME=Dive)
 
 set(TARGET_LINK_LIBS PRIVATE    
         dive_grpc_proto
-        service
         ${_GRPC_GRPCPP}
         ${_PROTOBUF_LIBPROTOBUF})
 
@@ -61,8 +60,8 @@ if(ANDROID)
 endif()
 
 target_link_libraries(${target_name}  ${TARGET_LINK_LIBS})
-target_link_directories(${target_name} 
-    PRIVATE ${CMAKE_SOURCE_DIR}/capture_service)
+# target_link_directories(${target_name} 
+#     PRIVATE ${CMAKE_SOURCE_DIR}/capture_service)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_target_properties(${target_name} PROPERTIES LINK_FLAGS_RELEASE -s)

@@ -19,8 +19,10 @@ limitations under the License.
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "absl/flags/flag.h"
 #include "absl/strings/str_format.h"
@@ -131,6 +133,9 @@ grpc::Status DiveServiceImpl::DownloadFile(grpc::ServerContext             *cont
 
     return grpc::Status::OK;
 }
+std::promise<void>            server_ready_promise;
+
+std::unique_ptr<grpc::Server> g_server;
 
 void RunServer(uint16_t port)
 {
@@ -142,9 +147,40 @@ void RunServer(uint16_t port)
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
 
     builder.RegisterService(&service);
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    g_server = builder.BuildAndStart();
     LOGI("Server listening on %s", server_address.c_str());
-    server->Wait();
+    // server->Wait();
+}
+
+void StopServer()
+{
+    if (g_server)
+    {
+        std::future<void> server_ready_future = server_ready_promise.get_future();
+
+        LOGI("g_server wait server finish starting \n");
+        // Wait for the server to be ready
+        server_ready_future.wait();
+        LOGI("g_server  server  started \n");
+
+        LOGI("g_server begin shutdown\n");
+        g_server->Shutdown();
+        LOGI("g_server  shutdown done, start to wait\n");
+
+        g_server->Wait();
+        LOGI("g_server  wait done\n");
+    }
+    g_server = nullptr;
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+}
+
+void server_start()
+{
+    RunServer(absl::GetFlag(FLAGS_port));
+}
+void server_stop()
+{
+    StopServer();
 }
 
 int server_main()
@@ -153,4 +189,83 @@ int server_main()
     return 0;
 }
 
+ServerRunner::ServerRunner()
+{
+    Dive::server_start();
+}
+
+ServerRunner::~ServerRunner()
+{
+    LOGI("Wait for server thread to join");
+    Dive::server_stop();
+}
+
+ServerRunner &GetServerRunner()
+{
+    static ServerRunner runner;
+    return runner;
+}
+
 }  // namespace Dive
+
+
+
+#include <atomic>
+
+// static std::atomic<bool> initialized(false); // Initialization guard
+ int my_global_var = 0;
+
+
+// extern "C" {
+// __attribute__((constructor)) void _layer_keep_alive_func__();
+// }
+
+#include <dlfcn.h>
+class keep_alive_struct {
+ public:
+  keep_alive_struct();
+};
+
+keep_alive_struct::keep_alive_struct() {
+//   Dl_info info;
+//   if (dladdr((void*)&_layer_keep_alive_func__, &info)) 
+  {
+    // LOGI("info.dli_fname %s \n", info.dli_fname);
+    // void* handle = dlopen(info.dli_fname, RTLD_NODELETE);
+    void* handle = dlopen("data/local/tmp/libservice.so", RTLD_NODELETE);
+    int *global_var_ptr = (int *)dlsym(handle, "my_global_var");
+    if(global_var_ptr) {
+        if(*global_var_ptr == 0){
+            LOGI("global_var_ptr is 0\n");
+                *global_var_ptr = 1;
+                Dive::GetServerRunner();  
+        }
+        
+    }
+    else {
+        LOGI("global_var_ptr is null\n");
+    }
+
+  }
+
+
+//    if (!initialized.exchange(true)) {
+//     DiveLayer::GetServerRunner();
+//    }
+}
+
+ keep_alive_struct d;
+// (void)d;
+
+
+// extern "C" {
+// // _layer_keep_alive_func__ is marked __attribute__((constructor))
+// // this means on .so open, it will be called. Once that happens,
+// // we create a struct, which on Android and Linux, forces the layer
+// // to never be unloaded. There is some global state in perfetto
+// // producers that does not like being unloaded.
+// void _layer_keep_alive_func__() {
+//   keep_alive_struct d;
+//   (void)d;
+// }
+// }

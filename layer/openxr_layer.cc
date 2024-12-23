@@ -50,18 +50,24 @@ struct XrInstanceData
 {
     XrInstance               instance;
     XrGeneratedDispatchTable dispatch_table;
+    // ServerRunner            &server;
+
+    // XrInstanceData() :
+    //     server(GetServerRunner())
+    // {
+    // }
 };
 
 struct XrSessionData
 {
     XrSession                session;
     XrGeneratedDispatchTable dispatch_table;
-    ServerRunner            &server;
+    // ServerRunner            &server;
 
-    XrSessionData() :
-        server(GetServerRunner())
-    {
-    }
+    // XrSessionData() :
+    //     server(GetServerRunner())
+    // {
+    // }
 };
 
 static thread_local XrInstanceData *last_used_xr_instance_data = nullptr;
@@ -120,7 +126,7 @@ XRAPI_ATTR XrResult XRAPI_CALL ApiDiveLayerXrEndFrame(XrSession             sess
     {
         LOGE("sess_data is null in ApiDiveLayerXrEndFrame\n");
     }
-    Dive::GetTraceMgr().OnNewFrame();
+    (*OnNewFrame)();
 
     return result;
 }

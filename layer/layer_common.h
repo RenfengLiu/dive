@@ -29,17 +29,14 @@ inline uintptr_t DataKey(const void *object)
 
 bool IsLibwrapLoaded();
 
-class ServerRunner
-{
-public:
-    ServerRunner();
-    ~ServerRunner();
 
-private:
-    bool        is_libwrap_loaded;
-    std::thread server_thread;
-};
-
-ServerRunner &GetServerRunner();
 
 }  // namespace DiveLayer
+
+extern "C"
+{
+   extern void (*OnNewFrame)();
+    extern void (*TriggerTrace)();
+    extern void (*WaitForTraceDone)();
+    extern const char *(*GetTraceFilePath)();
+}

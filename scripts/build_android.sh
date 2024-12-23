@@ -43,6 +43,7 @@ do
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=NEVER \
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER \
         -DDIVE_ENABLE_PERFETTO=OFF \
+        -DABSL_MIN_LOG_LEVEL=-1 \
         ${SRC_DIR} || exit 1
 
     cmake --build . --config=${build} -j || exit 1

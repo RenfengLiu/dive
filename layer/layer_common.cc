@@ -52,29 +52,104 @@ bool IsLibwrapLoaded()
     return loaded;
 }
 
-ServerRunner::ServerRunner()
-{
-    is_libwrap_loaded = IsLibwrapLoaded();
-    LOGI("libwrap loaded: %d", is_libwrap_loaded);
-    if (is_libwrap_loaded)
-    {
-        server_thread = std::thread(Dive::server_main);
-    }
-}
-
-ServerRunner::~ServerRunner()
-{
-    if (is_libwrap_loaded && server_thread.joinable())
-    {
-        LOGI("Wait for server thread to join");
-        server_thread.join();
-    }
-}
-
-ServerRunner &GetServerRunner()
-{
-    static ServerRunner runner;
-    return runner;
-}
-
 }  // namespace DiveLayer
+
+
+// #include <atomic>
+
+// // static std::atomic<bool> initialized(false); // Initialization guard
+//  int my_global_var = 0;
+
+
+// extern "C" {
+// __attribute__((constructor)) void _layer_keep_alive_func__();
+// }
+
+// #include <dlfcn.h>
+// class keep_alive_struct {
+//  public:
+//   keep_alive_struct();
+// };
+
+// keep_alive_struct::keep_alive_struct() {
+//   Dl_info info;
+//   if (dladdr((void*)&_layer_keep_alive_func__, &info)) {
+//     LOGI("info.dli_fname %s \n", info.dli_fname);
+//     void* handle = dlopen(info.dli_fname, RTLD_NODELETE);
+//     int *global_var_ptr = (int *)dlsym(handle, "my_global_var");
+//     if(global_var_ptr) {
+//         if(*global_var_ptr == 0){
+//             LOGI("global_var_ptr is 0");
+//                 *global_var_ptr = 1;
+//                 // DiveLayer::GetServerRunner();  
+//         }
+        
+//     }
+//     else {
+//         LOGI("global_var_ptr is null");
+//     }
+
+//   }
+
+
+// //    if (!initialized.exchange(true)) {
+// //     DiveLayer::GetServerRunner();
+// //    }
+// }
+
+
+// extern "C" {
+// // _layer_keep_alive_func__ is marked __attribute__((constructor))
+// // this means on .so open, it will be called. Once that happens,
+// // we create a struct, which on Android and Linux, forces the layer
+// // to never be unloaded. There is some global state in perfetto
+// // producers that does not like being unloaded.
+// void _layer_keep_alive_func__() {
+//   keep_alive_struct d;
+//   (void)d;
+// }
+// }
+
+extern "C" {
+__attribute__((constructor)) void _load_service_func__();
+}
+
+#include <dlfcn.h>
+class load_service_struct {
+ public:
+  load_service_struct();
+};
+
+void (*OnNewFrame)() = NULL;
+void (*TriggerTrace)() = NULL;
+void (*WaitForTraceDone)() = NULL;
+const char* (*GetTraceFilePath)() = NULL;
+
+
+load_service_struct::load_service_struct() {
+    void* handle = dlopen("/data/local/tmp/libservice.so", RTLD_NODELETE);
+    if(handle == NULL) {
+        LOGI("LOAD libservice failed");
+    }
+    else {
+        LOGI("LOAD libservice success");
+       OnNewFrame = reinterpret_cast<void (*)()>( dlsym(handle, "OnNewFrame"));
+       TriggerTrace =  reinterpret_cast<void (*)()>(dlsym(handle, "TriggerTrace"));
+       WaitForTraceDone =  reinterpret_cast<void (*)()>(dlsym(handle, "WaitForTraceDone"));
+       GetTraceFilePath = reinterpret_cast<const char* (*)()>( dlsym(handle, "GetTraceFilePath"));
+    }
+}
+
+extern "C" {
+// _layer_keep_alive_func__ is marked __attribute__((constructor))
+// this means on .so open, it will be called. Once that happens,
+// we create a struct, which on Android and Linux, forces the layer
+// to never be unloaded. There is some global state in perfetto
+// producers that does not like being unloaded.
+void _load_service_func__() {
+  load_service_struct d;
+  (void)d;
+}
+}
+
+

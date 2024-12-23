@@ -44,4 +44,13 @@ class DiveServiceImpl final : public DiveService::Service
                               grpc::ServerWriter<FileContent> *writer) override;
 };
 
+class ServerRunner
+{
+public:
+    ServerRunner();
+    ~ServerRunner();
+};
+
+ServerRunner &GetServerRunner();
+
 }  // namespace Dive

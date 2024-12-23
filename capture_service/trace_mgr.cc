@@ -39,3 +39,23 @@ TraceManager::TraceManager() :
 }
 
 }  // namespace Dive
+
+extern "C"{
+    void OnNewFrame()
+    {
+        Dive::GetTraceMgr().OnNewFrame();
+    }
+
+    void TriggerTrace() {
+        Dive::GetTraceMgr().TriggerTrace();
+    }
+
+    void WaitForTraceDone() {
+        Dive::GetTraceMgr().WaitForTraceDone();
+    }
+
+    const char* GetTraceFilePath() {
+        return Dive::GetTraceMgr().GetTraceFilePath().c_str();
+    }
+    
+}
