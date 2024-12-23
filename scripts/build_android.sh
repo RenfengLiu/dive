@@ -19,7 +19,7 @@ PROJECT_ROOT="${PROJECT_ROOT%/*}/.."
 readonly PROJECT_ROOT="$(readlink -f ${PROJECT_ROOT})"
 readonly BUILD_DIR_ROOT=${PROJECT_ROOT}/build_android
 readonly SRC_DIR=${PROJECT_ROOT}
-readonly BUILD_TYPE=(Debug Release)
+readonly BUILD_TYPE=(Debug )
 
 for build in "${BUILD_TYPE[@]}"
 do
@@ -47,7 +47,7 @@ do
         ${SRC_DIR} || exit 1
 
     cmake --build . --config=${build} -j || exit 1
-    if [ ${build} == "Release" ]; then
+    if [ ${build} == "Debug" ]; then
         cmake --install . || exit 1
     fi
     popd

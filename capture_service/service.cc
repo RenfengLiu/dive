@@ -149,7 +149,7 @@ void RunServer(uint16_t port)
     builder.RegisterService(&service);
     g_server = builder.BuildAndStart();
     LOGI("Server listening on %s", server_address.c_str());
-    // server->Wait();
+    g_server->Wait();
 }
 
 void StopServer()
@@ -224,6 +224,9 @@ ServerRunner &GetServerRunner()
 class keep_alive_struct {
  public:
   keep_alive_struct();
+
+  private:
+  std::thread worker;
 };
 
 keep_alive_struct::keep_alive_struct() {
@@ -235,10 +238,13 @@ keep_alive_struct::keep_alive_struct() {
     void* handle = dlopen("data/local/tmp/libservice.so", RTLD_NODELETE);
     int *global_var_ptr = (int *)dlsym(handle, "my_global_var");
     if(global_var_ptr) {
+        LOGI("global_var_ptr is %d\n", *global_var_ptr );
         if(*global_var_ptr == 0){
             LOGI("global_var_ptr is 0\n");
                 *global_var_ptr = 1;
-                Dive::GetServerRunner();  
+                // Dive::GetServerRunner();  
+                worker = std::thread(Dive::server_main);
+                worker.detach();
         }
         
     }
