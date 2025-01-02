@@ -65,6 +65,19 @@ else()
   set(COMMAND_UTILS_SRC "command_utils.cc")
 endif()
 
+
+# add_library(socket_ipc 
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/message.h"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/connection.h"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/socket_connection.h"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_client.h"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/connection.cpp"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/socket_connection.cpp"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/message.cpp"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_client.cpp"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_service.cpp"
+# )
+
 if(ANDROID)
 if(DIVE_ENABLE_PERFETTO)
   set(PERFETTO_DIVE_IMP_SRC perfetto_trace.cc)
@@ -72,6 +85,15 @@ else()
   set(PERFETTO_DIVE_IMP_SRC perfetto_trace_empty.cc)
 endif()
   add_library(service
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/message.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/connection.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/socket_connection.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_client.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/connection.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/socket_connection.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/message.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_client.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ipc/capture_service.cpp"
               service.cc
               trace_mgr.cc
               android_trace_mgr.cc

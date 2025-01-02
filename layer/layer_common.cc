@@ -23,6 +23,8 @@ limitations under the License.
 #include "capture_service/log.h"
 #include "capture_service/server.h"
 
+#include "capture_service/ipc/capture_service.h"
+
 namespace DiveLayer
 {
 
@@ -58,7 +60,7 @@ ServerRunner::ServerRunner()
     LOGI("libwrap loaded: %d", is_libwrap_loaded);
     if (is_libwrap_loaded)
     {
-        server_thread = std::thread(Dive::server_main);
+        // server_thread = std::thread(Dive::server_main);
     }
 }
 
@@ -78,3 +80,39 @@ ServerRunner &GetServerRunner()
 }
 
 }  // namespace DiveLayer
+
+
+
+extern "C" {
+__attribute__((constructor)) void _layer_keep_alive_func__();
+}
+
+#include <dlfcn.h>
+
+#include <cstdint>
+#include <cstdio>
+class keep_alive_struct {
+ public:
+  keep_alive_struct();
+};
+
+keep_alive_struct::keep_alive_struct() {
+  Dl_info info;
+  if (dladdr((void*)&_layer_keep_alive_func__, &info)) {
+    LOGD("in keep_alive_struct");
+    dlopen(info.dli_fname, RTLD_NODELETE);
+  }
+}
+
+extern "C" {
+// _layer_keep_alive_func__ is marked __attribute__((constructor))
+// this means on .so open, it will be called. Once that happens,
+// we create a struct, which on Android and Linux, forces the layer
+// to never be unloaded. There is some global state in perfetto
+// producers that does not like being unloaded.
+void _layer_keep_alive_func__() {
+  keep_alive_struct d;
+  (void)d;
+  Dive::GetCaptureService().StartService();
+}
+}

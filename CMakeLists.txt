@@ -105,15 +105,15 @@ if(NOT ANDROID)
     add_subdirectory(third_party/gfxreconstruct)
 else()
 
-    execute_process(
-        COMMAND ./gradlew assembleDebug
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gfxreconstruct/android
-    )
+    # execute_process(
+    #     COMMAND ./gradlew assembleDebug
+    #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gfxreconstruct/android
+    # )
 
-    execute_process(
-        COMMAND ./gradlew assembleRelease
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gfxreconstruct/android
-    )
+    # execute_process(
+    #     COMMAND ./gradlew assembleRelease
+    #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gfxreconstruct/android
+    # )
 
     file(ARCHIVE_EXTRACT
     INPUT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/gfxreconstruct/android/layer/build/outputs/aar/layer-debug.aar"
