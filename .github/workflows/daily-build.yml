@@ -1,0 +1,122 @@
+name: Daily Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+# Cancel previous runs if a more recent commit is pushed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_Windows_Release:
+    name: "Windows daily release build"
+    runs-on: windows-2022
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+            version: 5.15.2
+            target: desktop
+            arch: win64_msvc2019_64
+      - uses: ilammy/setup-nasm@v1
+      - name: Install dependency
+        run: |
+          python3 -m pip install mako
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        id: setup-java
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25c
+      - name: Generate build files with cmake
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release -G "Visual Studio 17 2022" -A x64 -Bbuild .
+      - name: Build Dive host tools with VS 2022
+        run: |
+          cmake --build build --config Release
+      - name: Package Dive
+        run: |
+          cmake --install build --prefix install
+      - name: Build Android libraries
+        run: ./scripts/build_android.sh Release
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dive-Windows-Daily-Release-${{ github.sha }}
+          path: install
+
+  build_Linux_Gcc_Release:
+    name: "Linux gcc daily release build"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+      - name: Install dependency
+        run: |
+          sudo apt-get update --yes
+          sudo apt-get install --yes \
+            cmake gcc-14 \
+            clang-14 \
+            libsystemd-dev \
+            libbsd-dev \
+            ninja-build \
+            python3-mako
+          which gcc-14
+          which clang-14
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        id: setup-java
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25c # From README.md, version 25.2.9519653
+      - name: Build Android libraries
+        run: ./scripts/build_android.sh Release
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
+      - name: Generate build files with cmake
+        run: |
+          cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc-14 \
+            -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++-14 \
+            -GNinja \
+            -Bbuild .
+      - name: Build Dive host tools with ninja with gcc-14
+        run: |
+          ninja -C build
+      - name: Package Dive
+        run: |
+          cmake --install build --prefix install
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dive-Linux-Daily-Release-${{ github.sha }}
+          path: install
