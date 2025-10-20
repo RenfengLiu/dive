@@ -744,10 +744,34 @@ absl::Status DeviceManager::DeployReplayApk(const std::string &serial)
     return absl::OkStatus();
 }
 
+struct GfxrReplayCleanup
+{
+    const AdbSession         &adb;
+    const GfxrReplaySettings &settings;
+    ~GfxrReplayCleanup()
+    {
+        LOGD("RunReplayGfxrScript(): CLEANUP\n");
+        if (settings.run_type == GfxrReplayOptions::kPm4Dump)
+        {
+            std::string cmd = absl::StrFormat("shell setprop %s 0",
+                                              kEnableReplayPm4DumpPropertyName);
+            adb.Run(cmd).IgnoreError();
+            cmd = absl::StrFormat("shell setprop %s \\\"\\\"",
+                                  kReplayPm4DumpFileNamePropertyName);
+            adb.Run(cmd).IgnoreError();
+        }
+        else if (settings.run_type == GfxrReplayOptions::kRenderDoc)
+        {
+            UnsetSystemProperty(adb, kReplayCreateRenderDocCapture).IgnoreError();
+            DisableVulkanLayer(adb).IgnoreError();
+        }
+    }
+};
+
 absl::Status DeviceManager::RunReplayGfxrScript(const GfxrReplaySettings &settings) const
 {
     const AdbSession &adb = m_device->Adb();
-
+    GfxrReplayCleanup cleanup{ adb, settings };
     LOGD("RunReplayGfxrScript(): SETUP\n");
     std::filesystem::path parse_remote_capture = settings.remote_capture_path;
 
@@ -863,20 +887,6 @@ absl::Status DeviceManager::RunReplayGfxrScript(const GfxrReplaySettings &settin
                             remote_renderdoc_capture,
                             status.message()));
         }
-    }
-
-    LOGD("RunReplayGfxrScript(): CLEANUP\n");
-    if (settings.run_type == GfxrReplayOptions::kPm4Dump)
-    {
-        std::string cmd = absl::StrFormat("shell setprop %s 0", kEnableReplayPm4DumpPropertyName);
-        m_device->Adb().Run(cmd).IgnoreError();
-        cmd = absl::StrFormat("shell setprop %s \\\"\\\"", kReplayPm4DumpFileNamePropertyName);
-        m_device->Adb().Run(cmd).IgnoreError();
-    }
-    else if (settings.run_type == GfxrReplayOptions::kRenderDoc)
-    {
-        UnsetSystemProperty(adb, kReplayCreateRenderDocCapture).IgnoreError();
-        DisableVulkanLayer(adb).IgnoreError();
     }
 
     return absl::OkStatus();
