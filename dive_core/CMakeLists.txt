@@ -123,8 +123,8 @@ file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SRC_FILES EXCLUDE REGEX "_tests.cpp$")
 list(FILTER SRC_FILES EXCLUDE REGEX "${CMAKE_CURRENT_SOURCE_DIR}/tests/.*")
 
-if(DIVE_NO_DISASSEMBLY)
-    list(FILTER SRC_FILES EXCLUDE REGEX "shader_disassembly\\.cpp")
+if(DIVE_NO_DISASSEMBLY OR APPLE)
+list(FILTER SRC_FILES EXCLUDE REGEX "shader_disassembly\\.cpp")
 else()
     list(FILTER SRC_FILES EXCLUDE REGEX "shader_disassembly_dummy\\.cpp")
 endif()
@@ -148,7 +148,7 @@ include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/include/)
 include_directories(${THIRDPARTY_DIRECTORY}/libarchive/libarchive/)
 
-if(NOT MSVC)
+if(NOT MSVC AND NOT APPLE)
     add_definitions(-DHAVE_ENDIAN_H) # Required for freedreno_dev_info.c on Linux
 endif()
 
@@ -170,6 +170,7 @@ add_dependencies(${PROJECT_NAME} a6xx_py)
 add_dependencies(${PROJECT_NAME} freedreno_devices_header)
 
 make_directory("${FREEDRENO_ISA_DIRECTORY}")
+if(NOT APPLE)
 add_custom_command(
     OUTPUT ${FREEDRENO_IR3_ISA_SRC_FILE} ${FREEDRENO_IR3_ISA_HDR_FILE}
     COMMAND
@@ -183,6 +184,7 @@ add_custom_command(
     VERBATIM
 )
 
+find_package(Threads REQUIRED)
 add_library(
     freedreno_ir3
     STATIC
@@ -226,6 +228,12 @@ if(MSVC)
         PRIVATE "${THIRDPARTY_DIRECTORY}/mesa/src/util/google_dive_ext.c"
     )
     set_target_properties(freedreno_ir3 PROPERTIES FOLDER "freedreno")
+elseif(APPLE)
+target_compile_definitions(freedreno_ir3 PRIVATE
+    -DHAVE_FUNC_ATTRIBUTE_PACKED
+    -DHAVE_STRUCT_TIMESPEC
+    -DHAVE_PTHREAD
+)
 else()
     #set_source_files_properties(PROPERTIES LANGUAGE CXX
     target_compile_definitions(
@@ -241,9 +249,11 @@ else()
     )
 endif()
 
-target_compile_options(freedreno_ir3 PRIVATE -fPIC)
+target_compile_options(freedreno_ir3 PRIVATE -fPIC -pthread)
+target_link_libraries(freedreno_ir3 PRIVATE Threads::Threads)
 add_dependencies(${PROJECT_NAME} freedreno_ir3)
 target_link_libraries(${PROJECT_NAME} PRIVATE freedreno_ir3)
+endif()
 
 # This is linked privately because gfxr contains X11 headers that contain preprocessor macros which cause collisions
 # gfxr_decode_ext_lib itself can't link gfxrecon_decode privately because it's a dependency of a target (gfxrecon-replay) that doesn't specify PRIVATE/PUBLIC

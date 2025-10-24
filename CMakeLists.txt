@@ -87,7 +87,7 @@ configure_file(
 
 include_directories("${CMAKE_BINARY_DIR}/generated_include")
 
-option(DIVE_NO_DISASSEMBLY, "Include builtin shader disassembly.")
+option(DIVE_NO_DISASSEMBLY, "Include builtin shader disassembly." ON)
 if(DIVE_NO_DISASSEMBLY)
     add_definitions(-DDIVE_NO_DISASSEMBLY=1)
 endif()
@@ -103,14 +103,14 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/dive_core)
 
 if(NOT ANDROID)
     set(D3D12_SUPPORT OFF CACHE BOOL "")
-    add_subdirectory(third_party/gfxreconstruct)
     include(libarchive.cmake)
+    add_subdirectory(third_party/gfxreconstruct)
     add_subdirectory(gfxr_ext/decode)
     add_subdirectory(dive_core)
     add_subdirectory(cli)
     add_subdirectory(host_cli)
     add_subdirectory(lrz_validator)
-    add_subdirectory(trace_stats)
+    #add_subdirectory(trace_stats)
 
     if(NOT DIVE_NO_DISASSEMBLY)
         add_subdirectory(ui)
