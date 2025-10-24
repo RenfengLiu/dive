@@ -36,7 +36,7 @@ void DestroyActivity(struct android_app* app)
     {
         struct android_poll_source* source = nullptr;
         int                         events = 0;
-        int                         result = ALooper_pollAll(-1, nullptr, &events, reinterpret_cast<void**>(&source));
+        int                         result = ALooper_pollOnce(-1, nullptr, &events, reinterpret_cast<void**>(&source));
 
         if ((result >= 0) && (source))
         {

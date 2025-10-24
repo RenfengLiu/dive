@@ -52,12 +52,12 @@ void AndroidContext::ProcessEvents(bool wait_for_input)
 
         if (wait_for_input)
         {
-            result         = ALooper_pollAll(-1, nullptr, &events, reinterpret_cast<void**>(&source));
+            result         = ALooper_pollOnce(-1, nullptr, &events, reinterpret_cast<void**>(&source));
             wait_for_input = false;
         }
         else
         {
-            result = ALooper_pollAll(0, nullptr, &events, reinterpret_cast<void**>(&source));
+            result = ALooper_pollOnce(0, nullptr, &events, reinterpret_cast<void**>(&source));
         }
 
         if (result >= 0)
