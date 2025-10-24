@@ -117,7 +117,7 @@ file(GLOB_RECURSE SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 list(FILTER SRC_FILES EXCLUDE REGEX "_tests.cpp$")
 list(FILTER SRC_FILES EXCLUDE REGEX "${CMAKE_CURRENT_SOURCE_DIR}/tests/.*")
 
-if(DIVE_NO_DISASSEMBLY)
+if(DIVE_NO_DISASSEMBLY OR APPLE)
 list(FILTER SRC_FILES EXCLUDE REGEX "shader_disassembly\\.cpp")
 else()
 list(FILTER SRC_FILES EXCLUDE REGEX "shader_disassembly_dummy\\.cpp")
@@ -146,6 +146,7 @@ add_dependencies(${PROJECT_NAME} a6xx_py)
 add_dependencies(${PROJECT_NAME} freedreno_devices_header)
 
 make_directory("${FREEDRENO_ISA_DIRECTORY}")
+if(NOT APPLE)
 add_custom_command(
       OUTPUT ${FREEDRENO_IR3_ISA_SRC_FILE} ${FREEDRENO_IR3_ISA_HDR_FILE}
       COMMAND ${Python3_EXECUTABLE} ${THIRDPARTY_DIRECTORY}/mesa/src/compiler/isaspec/decode.py
@@ -158,6 +159,7 @@ add_custom_command(
       VERBATIM
 )
 
+find_package(Threads REQUIRED)
 add_library(freedreno_ir3 STATIC
     ${FREEDRENO_IR3_ISA_SRC_FILE}
     "${THIRDPARTY_DIRECTORY}/mesa/src/freedreno/ir3/disasm-a3xx.c"
@@ -196,6 +198,12 @@ if(MSVC)
   set_property(TARGET freedreno_ir3 PROPERTY C_STANDARD 11) # To support alignas
   target_sources(freedreno_ir3 PRIVATE "${THIRDPARTY_DIRECTORY}/mesa/src/util/google_dive_ext.c")
   set_target_properties(freedreno_ir3 PROPERTIES FOLDER "freedreno")
+elseif(APPLE)
+target_compile_definitions(freedreno_ir3 PRIVATE
+    -DHAVE_FUNC_ATTRIBUTE_PACKED
+    -DHAVE_STRUCT_TIMESPEC
+    -DHAVE_PTHREAD
+)
 else()
 #set_source_files_properties(PROPERTIES LANGUAGE CXX
   target_compile_definitions(freedreno_ir3 PRIVATE
@@ -209,9 +217,11 @@ else()
   )
 endif()
 
-target_compile_options(freedreno_ir3 PRIVATE -fPIC)
+target_compile_options(freedreno_ir3 PRIVATE -fPIC -pthread)
+target_link_libraries(freedreno_ir3 PRIVATE Threads::Threads)
 add_dependencies(${PROJECT_NAME} freedreno_ir3)
 target_link_libraries(${PROJECT_NAME} PRIVATE freedreno_ir3)
+endif()
 
 # This is linked privately because gfxr contains X11 headers that contain preprocessor macros which cause collisions
 # gfxr_decode_ext_lib itself can't link gfxrecon_decode privately because it's a dependency of a target (gfxrecon-replay) that doesn't specify PRIVATE/PUBLIC
