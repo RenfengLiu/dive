@@ -752,7 +752,7 @@ absl::Status DeviceManager::DeployReplayApk(const std::string &serial)
 
     std::string replay_apk_path = ResolveAndroidLibPath(kGfxrReplayApkName, "").generic_string();
     std::string recon_py_path = ResolveAndroidLibPath(kGfxrReconPyPath, "").generic_string();
-    std::string cmd = absl::StrFormat("python %s install-apk %s -s %s",
+    std::string cmd = absl::StrFormat("python3 %s install-apk %s -s %s",
                                       recon_py_path,
                                       replay_apk_path,
                                       serial);
@@ -836,7 +836,7 @@ absl::Status DeviceManager::RunReplayGfxrScript(const GfxrReplaySettings &settin
 
     LOGD("RunReplayGfxrScript(): RUN\n");
     std::string local_recon_py_path = ResolveAndroidLibPath(kGfxrReconPyPath, "").generic_string();
-    std::string cmd = absl::StrFormat("python %s replay %s %s",
+    std::string cmd = absl::StrFormat("python3 %s replay %s %s",
                                       local_recon_py_path,
                                       settings.remote_capture_path,
                                       settings.replay_flags_str);
@@ -930,6 +930,7 @@ absl::Status DeviceManager::RunReplayProfilingBinary(const GfxrReplaySettings &s
         LOGD("RunReplayProfilingBinary(): CLEANUP\n");
         std::string clean_cmd = absl::StrFormat("shell rm -rf -- %s", remote_profiling_dir);
         m_device->Adb().Run(clean_cmd).IgnoreError();
+        m_device->Adb().Run("shell setprop debug.my_profiler.start 0").IgnoreError();
     });
 
     std::string binary_path_on_device = absl::StrFormat("%s/%s",
