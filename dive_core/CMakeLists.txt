@@ -134,7 +134,7 @@ include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/include/)
 include_directories(${THIRDPARTY_DIRECTORY}/libarchive/libarchive/)
 
-if(NOT MSVC)
+if(NOT MSVC AND NOT APPLE)
   add_definitions(-DHAVE_ENDIAN_H)     # Required for freedreno_dev_info.c on Linux
 endif()
 

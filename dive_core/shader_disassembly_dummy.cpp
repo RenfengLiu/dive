@@ -14,10 +14,9 @@ Disassembly::Disassembly(const IMemoryManager& mem_manager,
 {
 }
 
-void Disassembly::Disassemble()
+void Disassembly::Disassemble() const
 {
-    m_disassembled_data.emplace();
-    m_disassembled_data->m_listing = "Shader disassembly not available.";
+    m_disassembled_data.m_listing = "Shader disassembly not available.";
 }
 
 bool Disassemble(const uint8_t* shader_memory,
