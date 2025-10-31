@@ -111,6 +111,7 @@ void android_main(struct android_app* app)
     }
     else if (arg_parser.IsInvalid() || (arg_parser.GetPositionalArgumentsCount() > 1))
     {
+    GFXRECON_WRITE_CONSOLE("GFXR Replay: Invalid arguments.");
         PrintUsage(kApplicationName);
         run = false;
     }
