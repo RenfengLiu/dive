@@ -77,7 +77,7 @@ else()
   target_include_directories(device_mgr PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..
   )
-  target_link_libraries(device_mgr 
+  target_link_libraries(device_mgr
     absl::flags
     absl::flags_parse
     absl::algorithm
@@ -103,13 +103,16 @@ else()
   enable_testing()
   include(GoogleTest)
   add_executable(device_mgr_test device_mgr_test.cc)
-  target_link_libraries(device_mgr_test
-    absl::status_matchers
+target_link_libraries(
+  device_mgr_test
+  PRIVATE
     device_mgr
     gmock
     gtest
     gtest_main
-    )
+    network
+    absl::status_matchers
+)
   gtest_discover_tests(device_mgr_test)
 
   add_executable(android_trace_mgr_test android_trace_mgr_test.cc)

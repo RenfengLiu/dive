@@ -64,6 +64,7 @@ public:
 
     // Gets the capture file size from the server.
     absl::StatusOr<size_t> GetCaptureFileSize(const std::string& remote_file_path);
+    SocketConnection*      GetConnection() const { return m_connection.get(); }
 
 private:
     // Performs a ping-pong check with the server.

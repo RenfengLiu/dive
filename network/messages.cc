@@ -263,6 +263,9 @@ absl::StatusOr<std::unique_ptr<ISerializable>> ReceiveMessage(SocketConnection* 
     case MessageType::FILE_SIZE_RESPONSE:
         message = std::make_unique<FileSizeResponse>();
         break;
+    case MessageType::START_REPLAY_REQUEST:
+        message = std::make_unique<StartReplayRequest>();
+        break;
     default:
         conn->Close();
         return absl::InvalidArgumentError(absl::StrCat("Unknown message type: ", type));

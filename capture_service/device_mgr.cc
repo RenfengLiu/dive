@@ -34,6 +34,8 @@ limitations under the License.
 #include "common/macros.h"
 #include "common/defer.h"
 #include "remote_files.h"
+#include "network/messages.h"
+#include "network/tcp_client.h"
 
 namespace Dive
 {
@@ -750,6 +752,8 @@ absl::Status DeviceManager::DeployReplayApk(const std::string &serial)
 {
     LOGD("DeployReplayApk(): starting\n");
 
+    RETURN_IF_ERROR(m_device->ForwardFirstAvailablePort());
+
     std::string replay_apk_path = ResolveAndroidLibPath(kGfxrReplayApkName, "").generic_string();
     std::string recon_py_path = ResolveAndroidLibPath(kGfxrReconPyPath, "").generic_string();
     std::string cmd = absl::StrFormat("python3 %s install-apk %s -s %s",
@@ -978,6 +982,26 @@ absl::Status DeviceManager::RunReplayProfilingBinary(const GfxrReplaySettings &s
     return absl::OkStatus();
 }
 
+absl::Status DeviceManager::RunReplayNetwork(const GfxrReplaySettings &settings) const {
+    assert(m_device != nullptr);
+    std::string replay_command = "am start -n com.google.gfxreconstruct.replay/android.app.NativeActivity";
+    replay_command.append(" -e args \"");
+    replay_command.append(settings.remote_capture_path);
+    if (!settings.replay_flags_str.empty())
+    {
+        replay_command.append(" ");
+        replay_command.append(settings.replay_flags_str);
+    }
+    replay_command.append("\"");
+    Network::TcpClient client;
+    RETURN_IF_ERROR(client.Connect("127.0.0.1", m_device->Port()));
+    Network::StartReplayRequest message;
+    message.SetString(replay_command);
+    RETURN_IF_ERROR(
+    Network::SendMessage(client.GetConnection(), message));
+    return absl::OkStatus();
+}
+
 absl::Status DeviceManager::RunReplayApk(const GfxrReplaySettings &settings) const
 {
     LOGD("RunReplayApk(): Check settings before run\n");
@@ -988,6 +1012,7 @@ absl::Status DeviceManager::RunReplayApk(const GfxrReplaySettings &settings) con
         return validated_settings.status();
     }
 
+    // m_device->ForwardFirstAvailablePort();
     LOGD("RunReplayApk(): Attempt to pin GPU clock frequency\n");
     bool trouble_pinning_clock = false;
     auto ret = m_device->Adb().Run("shell setprop compositor.high_priority 0");
@@ -1016,7 +1041,7 @@ absl::Status DeviceManager::RunReplayApk(const GfxrReplaySettings &settings) con
     }
     else
     {
-        ret_run = RunReplayGfxrScript(*validated_settings);
+        ret_run = RunReplayNetwork(*validated_settings);
     }
     if (!ret_run.ok())
     {

@@ -199,6 +199,7 @@ private:
     absl::Status RunReplayGfxrScript(const GfxrReplaySettings &settings) const;
     // Initiates GFXR replay through the profiling plugin, blocking call
     absl::Status RunReplayProfilingBinary(const GfxrReplaySettings &settings) const;
+    absl::Status RunReplayNetwork(const GfxrReplaySettings &settings) const;
 
     std::unique_ptr<AndroidDevice> m_device{ nullptr };
 };

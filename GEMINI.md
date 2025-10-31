@@ -113,6 +113,38 @@ While powerful, the frame loop implementation has some limitations that are impo
 *   **Performance Overhead**: To ensure stability, the replay loop uses `vkDeviceWaitIdle` to synchronize the CPU and GPU. This is a heavy-handed approach that can alter the performance characteristics of the application and potentially mask the very performance issues that are being investigated.
 *   **Brittleness**: The state-reset logic is complex and may not be robust enough to handle all possible capture scenarios. It has been tested on a limited set of captures and may fail with captures from other applications or drivers.
 
+## Network Communication
+
+The `network` directory contains the components responsible for communication between the Dive host tools (e.g., `dive_client_cli`) and the capture service running on the Android device. It implements a client-server architecture with a custom messaging protocol.
+
+### Core Components
+
+*   **`ISerializable`**: An interface for objects that can be converted to and from a byte buffer. This forms the basis for all network messages.
+*   **Messages**: A set of classes that represent the different types of messages that can be sent between the client and server (e.g., `HandshakeRequest`, `Pm4CaptureRequest`). They handle their own serialization and deserialization.
+*   **`SocketConnection`**: A platform-independent wrapper for socket operations, supporting both TCP and Unix domain sockets. It abstracts away the low-level details of sending and receiving data.
+*   **`IMessageHandler`**: An interface for processing received messages. It defines callbacks for client connections, disconnections, and message handling.
+*   **`UnixDomainServer`**: A single-client server that listens on a Unix domain socket. It uses an `IMessageHandler` to process client requests. This is typically used on the Android device.
+*   **`TcpClient`**: A TCP client that connects to the server, performs a handshake, and sends requests. It includes a keep-alive mechanism to maintain the connection. This is used by the host tools.
+
+### Communication Protocol
+
+The communication protocol uses a Type-Length-Value (TLV) framing system:
+
+1.  **Type**: A 32-bit integer identifying the message type.
+2.  **Length**: A 32-bit integer specifying the size of the payload.
+3.  **Value**: The serialized message payload.
+
+This ensures that messages can be reliably sent and received over the stream-based socket connection.
+
+### Workflow
+
+1.  The `UnixDomainServer` starts on the Android device, listening on a Unix domain socket.
+2.  The `dive_client_cli` (using `TcpClient`) connects to the server via `adb forward`.
+3.  A handshake is performed to ensure version compatibility.
+4.  The client sends requests (e.g., to start a capture or download a file).
+5.  The server processes the requests using its `IMessageHandler` and sends back responses.
+6.  A keep-alive mechanism periodically sends ping/pong messages to ensure the connection is active.
+
 ## Gemini Instructions
 
 Always read the content of the file before doing any modification, as the content may have been changed. 

@@ -45,7 +45,8 @@ enum class MessageType : uint32_t
     DOWNLOAD_FILE_REQUEST = 7,
     DOWNLOAD_FILE_RESPONSE = 8,
     FILE_SIZE_REQUEST = 9,
-    FILE_SIZE_RESPONSE = 10
+    FILE_SIZE_RESPONSE = 10,
+    START_REPLAY_REQUEST = 11
 };
 
 class HandshakeMessage : public ISerializable
@@ -82,6 +83,12 @@ public:
 
 private:
     std::string m_str;
+};
+
+class StartReplayRequest : public StringMessage
+{
+public:
+    MessageType GetMessageType() const override { return MessageType::START_REPLAY_REQUEST; }
 };
 
 class HandshakeRequest : public HandshakeMessage

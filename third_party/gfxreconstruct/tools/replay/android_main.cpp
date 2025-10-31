@@ -54,6 +54,10 @@
 #include "parse_dump_resources_cli.h"
 #include "replay_pre_processing.h"
 #include "util/android/intent.h"
+#include "network/message_handler.h"
+#include "network/unix_domain_server.h"
+#include <thread>
+
 
 #include <android/log.h>
 #include <android/window.h>
@@ -74,20 +78,91 @@ const int32_t kSwipeDistance = 200;
 void        ProcessAppCmd(struct android_app* app, int32_t cmd);
 int32_t     ProcessInputEvent(struct android_app* app, AInputEvent* event);
 
-static std::unique_ptr<gfxrecon::decode::FileProcessor> file_processor;
+void RunReplay(struct android_app* app, const std::string& args);
 
-extern "C"
+absl::Status SendPong(Network::SocketConnection *client_conn)
 {
-    uint64_t MainGetCurrentBlockIndex()
+    Network::PongMessage response;
+    return Network::SendMessage(client_conn, response);
+}
+
+absl::Status Handshake(Network::HandshakeRequest *request, Network::SocketConnection *client_conn)
+{
+    Network::HandshakeResponse response;
+    response.SetMajorVersion(request->GetMajorVersion());
+    response.SetMinorVersion(request->GetMinorVersion());
+    return Network::SendMessage(client_conn, response);
+}
+
+class ReplayMessageHandler : public Network::IMessageHandler
+{
+public:
+    ReplayMessageHandler(struct android_app* app) :
+        m_app(app)
+    {}
+
+    void OnConnect() override {}
+
+    void HandleMessage(std::unique_ptr<Network::ISerializable> message,
+                       Network::SocketConnection*              client_conn) override
     {
-        return file_processor->GetCurrentBlockIndex();
+        if (!message)
+        {
+            GFXRECON_LOG_WARNING("Received a null message.");
+            return;
+        }
+        if (!client_conn)
+        {
+            GFXRECON_LOG_WARNING("Received a message with a null client connection.");
+            return;
+        }
+
+        switch (message->GetMessageType())
+        {
+            case Network::MessageType::PING_MESSAGE:
+            {
+                GFXRECON_LOG_INFO("Message received: Ping");
+                auto status = SendPong(client_conn);
+                if (!status.ok())
+                {
+                    GFXRECON_LOG_WARNING("Send pong failed: %s", std::string(status.message()).c_str());
+                }
+                break;
+            }
+            case Network::MessageType::HANDSHAKE_REQUEST:
+            {
+                GFXRECON_LOG_INFO("Message received: HandShakeRequest");
+                auto* request = static_cast<Network::HandshakeRequest*>(message.get());
+                auto status = Handshake(request, client_conn);
+                if (!status.ok())
+                {
+                    GFXRECON_LOG_WARNING("Handshake failed: %s", std::string(status.message()).c_str());
+                }
+                break;
+            }
+            case Network::MessageType::START_REPLAY_REQUEST:
+            {
+                GFXRECON_LOG_INFO("Message received: StartReplayRequest");
+                auto* request = static_cast<Network::StartReplayRequest*>(message.get());
+                std::string args = request->GetString();
+                GFXRECON_WRITE_CONSOLE("Received start replay request with args: %s", args.c_str());
+                std::thread replay_thread(RunReplay, m_app, args);
+                replay_thread.detach();
+                break;
+            }
+            default:
+            {
+                GFXRECON_LOG_WARNING("Message type %d unhandled.", static_cast<int>(message->GetMessageType()));
+                break;
+            }
+        }
     }
 
-    bool MainGetLoadingTrimmedState()
-    {
-        return file_processor->GetLoadingTrimmedState();
-    }
-}
+    void OnDisconnect() override {}
+
+private:
+    struct android_app* m_app;
+};
 
 void android_main(struct android_app* app)
 {
@@ -97,232 +172,243 @@ void android_main(struct android_app* app)
     // Keep screen on while window is active.
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
 
-    std::string                    args = gfxrecon::util::GetIntentExtra(app, kArgsExtentKey);
-    gfxrecon::util::ArgumentParser arg_parser(false, args.c_str(), kOptions, kArguments);
-
     app->onAppCmd     = ProcessAppCmd;
     app->onInputEvent = ProcessInputEvent;
 
-    bool run = true;
-
-    if (CheckOptionPrintUsage(kApplicationName, arg_parser) || CheckOptionPrintVersion(kApplicationName, arg_parser))
+    auto handler = std::make_unique<ReplayMessageHandler>(app);
+    Network::UnixDomainServer server(std::move(handler));
+    absl::Status status = server.Start("gfxr_replay");
+    if (!status.ok())
     {
-        run = false;
-    }
-    else if (arg_parser.IsInvalid() || (arg_parser.GetPositionalArgumentsCount() > 1))
-    {
-        PrintUsage(kApplicationName);
-        run = false;
+        GFXRECON_LOG_FATAL("Failed to start server: %s", std::string(status.message()).c_str());
+        return;
     }
 
-    if (run)
-    {
-        // Reinitialize logging with values retrieved from command line arguments
-        gfxrecon::util::Log::Settings log_settings;
-        GetLogSettings(arg_parser, log_settings);
-        gfxrecon::util::Log::Release();
-        gfxrecon::util::Log::Init(log_settings);
-
-        std::string filename = kDefaultCaptureFile;
-
-        if (arg_parser.GetPositionalArgumentsCount() == 1)
-        {
-            const std::vector<std::string>& positional_arguments = arg_parser.GetPositionalArguments();
-            filename                                             = positional_arguments[0];
-        }
-
-        try
-        {
-            // GOOGLE: Initialize either DiveFileProcessor or PreloadFileProcessor, not FileProcessor
-            bool use_dive_file_processor = !arg_parser.IsOptionSet(kPreloadMeasurementRangeOption);
-            file_processor =
-                use_dive_file_processor
-                    ? std::make_unique<gfxrecon::decode::DiveFileProcessor>()
-                    : std::unique_ptr<gfxrecon::decode::FileProcessor>(new gfxrecon::decode::PreloadFileProcessor);
-
-            if (!file_processor->Initialize(filename))
-            {
-                GFXRECON_WRITE_CONSOLE("Failed to load file %s.", filename.c_str());
-            }
-            else
-            {
-                auto application =
-                    std::make_shared<gfxrecon::application::Application>(kApplicationName, file_processor.get());
-                application->InitializeWsiContext(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, app);
-
-                gfxrecon::decode::VulkanTrackedObjectInfoTable tracked_object_info_table;
-                gfxrecon::decode::VulkanReplayOptions          replay_options =
-                    GetVulkanReplayOptions(arg_parser, filename, &tracked_object_info_table);
-
-                // GOOGLE: Pass replay options to DiveFileProcessor after initialization
-                if (use_dive_file_processor)
-                {
-                    auto* dive_file_processor =
-                        dynamic_cast<gfxrecon::decode::DiveFileProcessor*>(file_processor.get());
-                    GFXRECON_ASSERT(dive_file_processor)
-                    if (replay_options.loop_single_frame_count.has_value())
-                    {
-                        dive_file_processor->SetLoopSingleFrameCount(*(replay_options.loop_single_frame_count));
-                    }
-                }
-
-                file_processor->SetPrintBlockInfoFlag(replay_options.enable_print_block_info,
-                                                      replay_options.block_index_from,
-                                                      replay_options.block_index_to);
-
-                // GOOGLE: replace VulkanReplayConsumer with dive specific DiveVulkanReplayConsumer
-                gfxrecon::decode::DiveVulkanReplayConsumer vulkan_replay_consumer(application, replay_options);
-                gfxrecon::decode::VulkanDecoder        vulkan_decoder;
-
-                // GOOGLE: Pass replay options to enable/disable gpu time
-                if (arg_parser.IsOptionSet(kEnableGPUTime))
-                {
-                    vulkan_replay_consumer.SetEnableGPUTime(replay_options.enable_gpu_time);
-                }
-
-                ApiReplayOptions  api_replay_options;
-                ApiReplayConsumer api_replay_consumer;
-                api_replay_options.vk_replay_options   = &replay_options;
-                api_replay_consumer.vk_replay_consumer = &vulkan_replay_consumer;
-
-                if (IsRunPreProcessConsumer(api_replay_options))
-                {
-                    RunPreProcessConsumer(filename, api_replay_options, api_replay_consumer);
-                }
-
-                uint32_t measurement_start_frame;
-                uint32_t measurement_end_frame;
-                bool     has_mfr = GetMeasurementFrameRange(arg_parser, measurement_start_frame, measurement_end_frame);
-
-                std::string measurement_file_name;
-                GetMeasurementFilename(arg_parser, measurement_file_name);
-
-                bool     quit_after_frame = false;
-                uint32_t quit_frame;
-
-                if (replay_options.quit_after_frame)
-                {
-                    quit_after_frame = true;
-                    GetQuitAfterFrame(arg_parser, quit_frame);
-                }
-
-                gfxrecon::graphics::FpsInfo fps_info(static_cast<uint64_t>(measurement_start_frame),
-                                                     static_cast<uint64_t>(measurement_end_frame),
-                                                     has_mfr,
-                                                     replay_options.quit_after_measurement_frame_range,
-                                                     replay_options.flush_measurement_frame_range,
-                                                     replay_options.flush_inside_measurement_range,
-                                                     replay_options.preload_measurement_range,
-                                                     measurement_file_name,
-                                                     quit_after_frame,
-                                                     quit_frame);
-
-                vulkan_replay_consumer.SetFatalErrorHandler(
-                    [](const char* message) { throw std::runtime_error(message); });
-                vulkan_replay_consumer.SetFpsInfo(&fps_info);
-
-                vulkan_decoder.AddConsumer(&vulkan_replay_consumer);
-
-                file_processor->AddDecoder(&vulkan_decoder);
-
-                file_processor->SetPrintBlockInfoFlag(replay_options.enable_print_block_info,
-                                                      replay_options.block_index_from,
-                                                      replay_options.block_index_to);
-
-                application->SetPauseFrame(GetPauseFrame(arg_parser));
-
-#if ENABLE_OPENXR_SUPPORT
-                gfxrecon::decode::OpenXrReplayOptions  openxr_replay_options = {};
-                gfxrecon::decode::OpenXrDecoder        openxr_decoder;
-                gfxrecon::decode::OpenXrReplayConsumer openxr_replay_consumer(application, openxr_replay_options);
-                openxr_replay_consumer.SetVulkanReplayConsumer(&vulkan_replay_consumer);
-                openxr_replay_consumer.SetAndroidApp(app);
-                openxr_replay_consumer.SetFpsInfo(&fps_info);
-                openxr_decoder.AddConsumer(&openxr_replay_consumer);
-                file_processor->AddDecoder(&openxr_decoder);
-#endif
-
-                // Warn if the capture layer is active.
-                CheckActiveLayers(kLayerProperty);
-
-                // Start the application in the paused state, preventing replay from starting before the app
-                // gained focus event is received.
-                application->SetPaused(true);
-
-                app->userData = application.get();
-                application->SetFpsInfo(&fps_info);
-
-                fps_info.BeginFile();
-
-                application->Run();
-
-                // Add one so that it matches the trim range frame number semantic
-                fps_info.EndFile(file_processor->GetCurrentFrameNumber() + 1);
-
-                if ((file_processor->GetCurrentFrameNumber() > 0) &&
-                    (file_processor->GetErrorState() == gfxrecon::decode::FileProcessor::kErrorNone))
-                {
-                    if (file_processor->GetCurrentFrameNumber() < measurement_start_frame)
-                    {
-                        GFXRECON_LOG_WARNING(
-                            "Measurement range start frame (%u) is greater than the last replayed frame (%u). "
-                            "Measurements were never started, cannot calculate measurement range FPS.",
-                            measurement_start_frame,
-                            file_processor->GetCurrentFrameNumber());
-                    }
-                    else
-                    {
-                        fps_info.LogMeasurements();
-                    }
-                }
-                else if (file_processor->GetErrorState() != gfxrecon::decode::FileProcessor::kErrorNone)
-                {
-                    GFXRECON_WRITE_CONSOLE("A failure has occurred during replay");
-                }
-                else
-                {
-                    GFXRECON_WRITE_CONSOLE("File did not contain any frames");
-                }
-
-                // GOOGLE: Save GPU time stats file
-                if (arg_parser.IsOptionSet(kEnableGPUTime))
-                {
-                    const bool need_preload_processor = arg_parser.IsOptionSet(kPreloadMeasurementRangeOption);
-                    GFXRECON_ASSERT(!need_preload_processor)
-                    auto* dive_file_processor =
-                        dynamic_cast<gfxrecon::decode::DiveFileProcessor*>(file_processor.get());
-                    GFXRECON_ASSERT(dive_file_processor)
-                    bool res =
-                        dive_file_processor->WriteFile("gpu_time.csv", vulkan_replay_consumer.GetGPUTimeStatsCSVStr());
-                    if (!res)
-                    {
-                        GFXRECON_WRITE_CONSOLE("Unable to write GPU stats file");
-                    }
-                }
-            }
-        }
-        catch (std::runtime_error& error)
-        {
-            GFXRECON_WRITE_CONSOLE("Replay failed with error message: %s", error.what());
-        }
-        catch (const std::exception& error)
-        {
-            GFXRECON_WRITE_CONSOLE("Replay has encountered a fatal error and cannot continue: %s", error.what());
-        }
-        catch (...)
-        {
-            GFXRECON_WRITE_CONSOLE("Replay failed due to an unhandled exception");
-        }
-
-        // Ensure user data is cleared after either a successful run or an exception.
-        app->userData = nullptr;
-    }
+    server.Wait();
 
     gfxrecon::util::Log::Release();
 
     gfxrecon::util::DestroyActivity(app);
-    raise(SIGTERM);
 }
+
+void RunReplay(struct android_app* app, const std::string& args)
+{
+    std::unique_ptr<gfxrecon::decode::FileProcessor> file_processor;
+    gfxrecon::util::ArgumentParser                   arg_parser(false, args.c_str(), kOptions, kArguments);
+
+    if (CheckOptionPrintUsage(kApplicationName, arg_parser) || CheckOptionPrintVersion(kApplicationName, arg_parser))
+    {
+        return;
+    }
+    else if (arg_parser.IsInvalid() || (arg_parser.GetPositionalArgumentsCount() > 1))
+    {
+        GFXRECON_WRITE_CONSOLE("GFXR Replay: Invalid arguments.");
+        PrintUsage(kApplicationName);
+        return;
+    }
+
+    // The rest of the original android_main function goes here...
+    // Reinitialize logging with values retrieved from command line arguments
+    gfxrecon::util::Log::Settings log_settings;
+    GetLogSettings(arg_parser, log_settings);
+    gfxrecon::util::Log::Release();
+    gfxrecon::util::Log::Init(log_settings);
+
+    std::string filename = kDefaultCaptureFile;
+
+    if (arg_parser.GetPositionalArgumentsCount() == 1)
+    {
+        const std::vector<std::string>& positional_arguments = arg_parser.GetPositionalArguments();
+        filename                                             = positional_arguments[0];
+    }
+
+    try
+    {
+        // GOOGLE: Initialize either DiveFileProcessor or PreloadFileProcessor, not FileProcessor
+        bool use_dive_file_processor = !arg_parser.IsOptionSet(kPreloadMeasurementRangeOption);
+        file_processor =
+            use_dive_file_processor
+                ? std::make_unique<gfxrecon::decode::DiveFileProcessor>()
+                : std::unique_ptr<gfxrecon::decode::FileProcessor>(new gfxrecon::decode::PreloadFileProcessor);
+
+        if (!file_processor->Initialize(filename))
+        {
+            GFXRECON_WRITE_CONSOLE("Failed to load file %s.", filename.c_str());
+        }
+        else
+        {
+            auto application =
+                std::make_shared<gfxrecon::application::Application>(kApplicationName, file_processor.get());
+            application->InitializeWsiContext(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, app);
+
+            gfxrecon::decode::VulkanTrackedObjectInfoTable tracked_object_info_table;
+            gfxrecon::decode::VulkanReplayOptions          replay_options =
+                GetVulkanReplayOptions(arg_parser, filename, &tracked_object_info_table);
+
+            // GOOGLE: Pass replay options to DiveFileProcessor after initialization
+            if (use_dive_file_processor)
+            {
+                auto* dive_file_processor =
+                    dynamic_cast<gfxrecon::decode::DiveFileProcessor*>(file_processor.get());
+                GFXRECON_ASSERT(dive_file_processor)
+                if (replay_options.loop_single_frame_count.has_value())
+                {
+                    dive_file_processor->SetLoopSingleFrameCount(*(replay_options.loop_single_frame_count));
+                }
+            }
+
+            file_processor->SetPrintBlockInfoFlag(replay_options.enable_print_block_info,
+                                                  replay_options.block_index_from,
+                                                  replay_options.block_index_to);
+
+            // GOOGLE: replace VulkanReplayConsumer with dive specific DiveVulkanReplayConsumer
+            gfxrecon::decode::DiveVulkanReplayConsumer vulkan_replay_consumer(application, replay_options);
+            gfxrecon::decode::VulkanDecoder        vulkan_decoder;
+
+            // GOOGLE: Pass replay options to enable/disable gpu time
+            if (arg_parser.IsOptionSet(kEnableGPUTime))
+            {
+                vulkan_replay_consumer.SetEnableGPUTime(replay_options.enable_gpu_time);
+            }
+
+            ApiReplayOptions  api_replay_options;
+            ApiReplayConsumer api_replay_consumer;
+            api_replay_options.vk_replay_options   = &replay_options;
+            api_replay_consumer.vk_replay_consumer = &vulkan_replay_consumer;
+
+            if (IsRunPreProcessConsumer(api_replay_options))
+            {
+                RunPreProcessConsumer(filename, api_replay_options, api_replay_consumer);
+            }
+
+            uint32_t measurement_start_frame;
+            uint32_t measurement_end_frame;
+            bool     has_mfr = GetMeasurementFrameRange(arg_parser, measurement_start_frame, measurement_end_frame);
+
+            std::string measurement_file_name;
+            GetMeasurementFilename(arg_parser, measurement_file_name);
+
+            bool     quit_after_frame = false;
+            uint32_t quit_frame;
+
+            if (replay_options.quit_after_frame)
+            {
+                quit_after_frame = true;
+                GetQuitAfterFrame(arg_parser, quit_frame);
+            }
+
+            gfxrecon::graphics::FpsInfo fps_info(static_cast<uint64_t>(measurement_start_frame),
+                                                 static_cast<uint64_t>(measurement_end_frame),
+                                                 has_mfr,
+                                                 replay_options.quit_after_measurement_frame_range,
+                                                 replay_options.flush_measurement_frame_range,
+                                                 replay_options.flush_inside_measurement_range,
+                                                 replay_options.preload_measurement_range,
+                                                 measurement_file_name,
+                                                 quit_after_frame,
+                                                 quit_frame);
+
+            vulkan_replay_consumer.SetFatalErrorHandler(
+                [](const char* message) { throw std::runtime_error(message); });
+            vulkan_replay_consumer.SetFpsInfo(&fps_info);
+
+            vulkan_decoder.AddConsumer(&vulkan_replay_consumer);
+
+            file_processor->AddDecoder(&vulkan_decoder);
+
+            file_processor->SetPrintBlockInfoFlag(replay_options.enable_print_block_info,
+                                                  replay_options.block_index_from,
+                                                  replay_options.block_index_to);
+
+            application->SetPauseFrame(GetPauseFrame(arg_parser));
+
+#if ENABLE_OPENXR_SUPPORT
+            gfxrecon::decode::OpenXrReplayOptions  openxr_replay_options = {};
+            gfxrecon::decode::OpenXrDecoder        openxr_decoder;
+            gfxrecon::decode::OpenXrReplayConsumer openxr_replay_consumer(application, openxr_replay_options);
+            openxr_replay_consumer.SetVulkanReplayConsumer(&vulkan_replay_consumer);
+            openxr_replay_consumer.SetAndroidApp(app);
+            openxr_replay_consumer.SetFpsInfo(&fps_info);
+            openxr_decoder.AddConsumer(&openxr_replay_consumer);
+            file_processor->AddDecoder(&openxr_decoder);
+#endif
+
+            // Warn if the capture layer is active.
+            CheckActiveLayers(kLayerProperty);
+
+            // Start the application in the paused state, preventing replay from starting before the app
+            // gained focus event is received.
+            application->SetPaused(true);
+
+            app->userData = application.get();
+            application->SetFpsInfo(&fps_info);
+
+            fps_info.BeginFile();
+
+            application->Run();
+
+            // Add one so that it matches the trim range frame number semantic
+            fps_info.EndFile(file_processor->GetCurrentFrameNumber() + 1);
+
+            if ((file_processor->GetCurrentFrameNumber() > 0) &&
+                (file_processor->GetErrorState() == gfxrecon::decode::FileProcessor::kErrorNone))
+            {
+                if (file_processor->GetCurrentFrameNumber() < measurement_start_frame)
+                {
+                    GFXRECON_LOG_WARNING(
+                        "Measurement range start frame (%u) is greater than the last replayed frame (%u). "
+                        "Measurements were never started, cannot calculate measurement range FPS.",
+                        measurement_start_frame,
+                        file_processor->GetCurrentFrameNumber());
+                }
+                else
+                {
+                    fps_info.LogMeasurements();
+                }
+            }
+            else if (file_processor->GetErrorState() != gfxrecon::decode::FileProcessor::kErrorNone)
+            {
+                GFXRECON_WRITE_CONSOLE("A failure has occurred during replay");
+            }
+            else
+            {
+                GFXRECON_WRITE_CONSOLE("File did not contain any frames");
+            }
+
+            // GOOGLE: Save GPU time stats file
+            if (arg_parser.IsOptionSet(kEnableGPUTime))
+            {
+                const bool need_preload_processor = arg_parser.IsOptionSet(kPreloadMeasurementRangeOption);
+                GFXRECON_ASSERT(!need_preload_processor)
+                auto* dive_file_processor =
+                    dynamic_cast<gfxrecon::decode::DiveFileProcessor*>(file_processor.get());
+                GFXRECON_ASSERT(dive_file_processor)
+                bool res =
+                    dive_file_processor->WriteFile("gpu_time.csv", vulkan_replay_consumer.GetGPUTimeStatsCSVStr());
+                if (!res)
+                {
+                    GFXRECON_WRITE_CONSOLE("Unable to write GPU stats file");
+                }
+            }
+        }
+    }
+    catch (std::runtime_error& error)
+    {
+        GFXRECON_WRITE_CONSOLE("Replay failed with error message: %s", error.what());
+    }
+    catch (const std::exception& error)
+    {
+        GFXRECON_WRITE_CONSOLE("Replay has encountered a fatal error and cannot continue: %s", error.what());
+    }
+    catch (...)
+    {
+        GFXRECON_WRITE_CONSOLE("Replay failed due to an unhandled exception");
+    }
+
+    // Ensure user data is cleared after either a successful run or an exception.
+    app->userData = nullptr;
+}
+
 
 void ProcessAppCmd(struct android_app* app, int32_t cmd)
 {
