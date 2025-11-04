@@ -28,7 +28,10 @@
 */
 
 #ifndef  GFXRECON_GENERATED_VULKAN_DISPATCH_TABLE_H
-#define  GFXRECON_GENERATED_VULKAN_DISPATCH_TABLE_H
+#define GFXRECON_GENERATED_VULKAN_DISPATCH_TABLE_H
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 
 #include "format/platform_types.h"
 #include "util/defines.h"
@@ -45,6 +48,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #ifdef WIN32
 #ifdef CreateEvent
 #undef CreateEvent
@@ -60,7 +65,7 @@ GFXRECON_BEGIN_NAMESPACE(graphics)
 typedef const void* VulkanDispatchKey;
 
 // Retrieve a dispatch key from a dispatchable handle
-[[maybe_unused]] static VulkanDispatchKey GetVulkanDispatchKey(const void* handle)
+static VulkanDispatchKey GetVulkanDispatchKey(const void* handle)
 {
     const VulkanDispatchKey* dispatch_key = reinterpret_cast<const VulkanDispatchKey*>(handle);
     return (*dispatch_key);
@@ -1454,7 +1459,7 @@ struct VulkanDeviceTable
 };
 
 template <typename GetProcAddr, typename Handle, typename FuncP>
-[[maybe_unused]] static void LoadVulkanFunction(GetProcAddr gpa, Handle handle, const char* name, FuncP* funcp)
+static void LoadVulkanFunction(GetProcAddr gpa, Handle handle, const char* name, FuncP* funcp)
 {
     FuncP result = reinterpret_cast<FuncP>(gpa(handle, name));
     if (result != nullptr)
@@ -1463,7 +1468,7 @@ template <typename GetProcAddr, typename Handle, typename FuncP>
     }
 }
 
-[[maybe_unused]] static void LoadVulkanInstanceTable(PFN_vkGetInstanceProcAddr gpa, VkInstance instance, VulkanInstanceTable* table)
+static void LoadVulkanInstanceTable(PFN_vkGetInstanceProcAddr gpa, VkInstance instance, VulkanInstanceTable* table)
 {
     assert(table != nullptr);
 
@@ -1577,7 +1582,7 @@ template <typename GetProcAddr, typename Handle, typename FuncP>
     LoadVulkanFunction(gpa, instance, "vkGetPhysicalDeviceCooperativeMatrixFlexibleDimensionsPropertiesNV", &table->GetPhysicalDeviceCooperativeMatrixFlexibleDimensionsPropertiesNV);
 }
 
-[[maybe_unused]] static void LoadVulkanDeviceTable(PFN_vkGetDeviceProcAddr gpa, VkDevice device, VulkanDeviceTable* table)
+static void LoadVulkanDeviceTable(PFN_vkGetDeviceProcAddr gpa, VkDevice device, VulkanDeviceTable* table)
 {
     assert(table != nullptr);
 
@@ -2162,4 +2167,5 @@ template <typename GetProcAddr, typename Handle, typename FuncP>
 GFXRECON_END_NAMESPACE(graphics)
 GFXRECON_END_NAMESPACE(gfxrecon)
 
+#pragma clang diagnostic pop
 #endif // GFXRECON_GENERATED_VULKAN_DISPATCH_TABLE_H

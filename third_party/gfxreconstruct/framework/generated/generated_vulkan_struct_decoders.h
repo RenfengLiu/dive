@@ -43,6 +43,8 @@
 #include "util/defines.h"
 
 #include "vulkan/vulkan.h"
+#include "vulkan_ext/vk_qcom_render_mode_control.h"
+
 #include "vk_video/vulkan_video_codec_h264std.h"
 #include "vk_video/vulkan_video_codec_h264std_decode.h"
 #include "vk_video/vulkan_video_codec_h264std_encode.h"
@@ -50,6 +52,8 @@
 #include "vk_video/vulkan_video_codec_h265std_decode.h"
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
+
+#include "vk_qcom_render_mode_control.h"
 
 #include <memory>
 
@@ -6659,6 +6663,24 @@ struct Decoded_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR
     using struct_type = VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR;
 
     VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR* decoded_value{ nullptr };
+
+    PNextNode* pNext{ nullptr };
+};
+
+struct Decoded_VkRenderModeControlRenderPassBeginInfoQCOM
+{
+    using struct_type = VkRenderModeControlRenderPassBeginInfoQCOM;
+
+    VkRenderModeControlRenderPassBeginInfoQCOM* decoded_value{ nullptr };
+
+    PNextNode* pNext{ nullptr };
+};
+
+struct Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM
+{
+    using struct_type = VkPhysicalDeviceRenderModeControlFeaturesQCOM;
+
+    VkPhysicalDeviceRenderModeControlFeaturesQCOM* decoded_value{ nullptr };
 
     PNextNode* pNext{ nullptr };
 };

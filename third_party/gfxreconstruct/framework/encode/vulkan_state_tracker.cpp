@@ -37,6 +37,8 @@
 #include "util/to_string.h"
 #include "vulkan/vulkan_core.h"
 
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
+
 #include "util/page_status_tracker.h"
 
 #include <algorithm>
@@ -641,9 +643,39 @@ void VulkanStateTracker::TrackMappedMemory(VkDevice         device,
     }
 }
 
+void VulkanStateTracker::TrackCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
+                                                 const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                 VkSubpassContents            contents)
+{
+    TrackBeginRenderPass(commandBuffer, pRenderPassBegin);
+}
+
+void VulkanStateTracker::TrackCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+                                                  const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                  const VkSubpassBeginInfo*    pSubpassBeginInfo)
+{
+    TrackBeginRenderPass(commandBuffer, pRenderPassBegin);
+}
+
 void VulkanStateTracker::TrackBeginRenderPass(VkCommandBuffer command_buffer, const VkRenderPassBeginInfo* begin_info)
 {
     assert((command_buffer != VK_NULL_HANDLE) && (begin_info != nullptr));
+
+    const auto* pnext = reinterpret_cast<const VkBaseInStructure*>(begin_info->pNext);
+    GFXRECON_LOG_INFO("TrackBeginRenderPass: In TrackBeginRenderPass");
+
+    while (pnext)
+    {
+        GFXRECON_LOG_INFO("TrackBeginRenderPass: VkRenderPassBeginInfo has pNext");
+        if (pnext->sType == VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM)
+        {
+            const auto* render_mode_info = reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pnext);
+            GFXRECON_LOG_INFO("TrackBeginRenderPass: Found VkRenderModeControlRenderPassBeginInfoQCOM with "
+                              "preferredRenderMode = %d",
+                              render_mode_info->preferredRenderMode);
+        }
+        pnext = pnext->pNext;
+    }
 
     auto wrapper = vulkan_wrappers::GetWrapper<vulkan_wrappers::CommandBufferWrapper>(command_buffer);
     wrapper->active_render_pass =

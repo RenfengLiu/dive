@@ -31,6 +31,8 @@
 #include "format/platform_types.h"
 #include "cstring"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(graphics)
 
@@ -44,6 +46,8 @@ size_t vulkan_struct_deep_copy_stype(const void* pNext, uint8_t* out_data)
     uint64_t offset = 0;
     auto     base    = reinterpret_cast<const VkBaseInStructure*>(pNext);
     uint8_t* out_ptr = offset_ptr(out_data, offset);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
     switch (base->sType)
     {
         default:
@@ -2061,6 +2065,14 @@ size_t vulkan_struct_deep_copy_stype(const void* pNext, uint8_t* out_data)
             offset += vulkan_struct_deep_copy(
                 reinterpret_cast<const VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR*>(pNext), 1, out_ptr);
             break;
+        case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM):
+            offset += vulkan_struct_deep_copy(
+                reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pNext), 1, out_ptr);
+            break;
+        case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM):
+            offset += vulkan_struct_deep_copy(
+                reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(pNext), 1, out_ptr);
+            break;
         case VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT:
             offset += vulkan_struct_deep_copy(
                 reinterpret_cast<const VkDebugReportCallbackCreateInfoEXT*>(pNext), 1, out_ptr);
@@ -3898,6 +3910,7 @@ size_t vulkan_struct_deep_copy_stype(const void* pNext, uint8_t* out_data)
                 reinterpret_cast<const VkPhysicalDeviceMeshShaderPropertiesEXT*>(pNext), 1, out_ptr);
             break;
     }
+#pragma clang diagnostic pop
     return offset;
 }
 

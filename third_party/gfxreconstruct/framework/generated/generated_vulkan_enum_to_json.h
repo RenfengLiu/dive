@@ -42,6 +42,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 
@@ -484,6 +486,7 @@ void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingInvocationReor
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingLssIndexingModeNV& value, const util::JsonOptions& options = util::JsonOptions());
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingLssPrimitiveEndCapsModeNV& value, const util::JsonOptions& options = util::JsonOptions());
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingShaderGroupTypeKHR& value, const util::JsonOptions& options = util::JsonOptions());
+void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderModeQCOM& value, const util::JsonOptions& options = util::JsonOptions());
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderPassCreateFlagBits& value, const util::JsonOptions& options = util::JsonOptions());
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderingFlagBits& value, const util::JsonOptions& options = util::JsonOptions());
 void FieldToJson(nlohmann::ordered_json& jdata, const VkResolveModeFlagBits& value, const util::JsonOptions& options = util::JsonOptions());

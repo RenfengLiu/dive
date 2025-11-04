@@ -35,6 +35,8 @@
 #include "generated/generated_vulkan_struct_handle_mappers.h"
 #include "util/defines.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 
@@ -11421,6 +11423,8 @@ void InitializeOutputStructPNextImpl(const VkBaseInStructure* in_pnext, VkBaseOu
 {
     while(in_pnext)
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
         switch(in_pnext->sType)
         {
             case VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER:
@@ -13958,6 +13962,16 @@ void InitializeOutputStructPNextImpl(const VkBaseInStructure* in_pnext, VkBaseOu
                 output_struct->pNext = reinterpret_cast<VkBaseOutStructure*>(DecodeAllocator::Allocate<VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR>());
                 break;
             }
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM):
+            {
+                output_struct->pNext = reinterpret_cast<VkBaseOutStructure*>(DecodeAllocator::Allocate<VkRenderModeControlRenderPassBeginInfoQCOM>());
+                break;
+            }
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM):
+            {
+                output_struct->pNext = reinterpret_cast<VkBaseOutStructure*>(DecodeAllocator::Allocate<VkPhysicalDeviceRenderModeControlFeaturesQCOM>());
+                break;
+            }
             case VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT:
             {
                 output_struct->pNext = reinterpret_cast<VkBaseOutStructure*>(DecodeAllocator::Allocate<VkDebugReportCallbackCreateInfoEXT>());
@@ -16276,6 +16290,7 @@ void InitializeOutputStructPNextImpl(const VkBaseInStructure* in_pnext, VkBaseOu
             default:
                 break;
         }
+#pragma clang diagnostic pop
         output_struct = output_struct->pNext;
         output_struct->sType = in_pnext->sType;
         in_pnext = in_pnext->pNext;

@@ -450,16 +450,36 @@ StructPointerDecoder<Decoded_VkDebugUtilsLabelEXT>* pLabelInfo)
 }
 
 void DiveVulkanReplayConsumer::Process_vkCmdBeginRenderPass(
-const ApiCallInfo&                                   call_info,
-format::HandleId                                     commandBuffer,
-StructPointerDecoder<Decoded_VkRenderPassBeginInfo>* pRenderPassBegin,
-VkSubpassContents                                    contents)
+    const ApiCallInfo&                                   call_info,
+    format::HandleId                                     commandBuffer,
+    StructPointerDecoder<Decoded_VkRenderPassBeginInfo>* pRenderPassBegin,
+    VkSubpassContents                                    contents)
 {
+    GFXRECON_LOG_INFO("TrackBeginRenderPass: In TrackBeginRenderPass");
+    if (pRenderPassBegin->GetPointer()->pNext)
+    {
+        GFXRECON_LOG_INFO("TrackBeginRenderPass: VkRenderPassBeginInfo has pNext");
+        const auto* pnext =
+            reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->GetPointer()->pNext);
+        while (pnext)
+        {
+            if (pnext->sType == VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM)
+            {
+                const auto* render_mode_info =
+                    reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pnext);
+                GFXRECON_LOG_INFO(
+                    "TrackBeginRenderPass: Found VkRenderModeControlRenderPassBeginInfoQCOM with "
+                    "preferredRenderMode = %u",
+                    render_mode_info->preferredRenderMode);
+            }
+            pnext = pnext->pNext;
+        }
+    }
     VkCommandBuffer in_commandBuffer = MapHandle<
-    VulkanCommandBufferInfo>(commandBuffer, &CommonObjectInfoTable::GetVkCommandBufferInfo);
+        VulkanCommandBufferInfo>(commandBuffer, &CommonObjectInfoTable::GetVkCommandBufferInfo);
 
     PFN_vkCmdWriteTimestamp CmdWriteTimestamp = reinterpret_cast<PFN_vkCmdWriteTimestamp>(
-    GetDeviceTable(in_commandBuffer)->CmdWriteTimestamp);
+        GetDeviceTable(in_commandBuffer)->CmdWriteTimestamp);
 
     Dive::GPUTime::GpuTimeStatus status = gpu_time_.OnCmdBeginRenderPass(in_commandBuffer,
                                                                          CmdWriteTimestamp);
@@ -493,16 +513,36 @@ void DiveVulkanReplayConsumer::Process_vkCmdEndRenderPass(const ApiCallInfo& cal
 }
 
 void DiveVulkanReplayConsumer::Process_vkCmdBeginRenderPass2(
-const ApiCallInfo&                                   call_info,
-format::HandleId                                     commandBuffer,
-StructPointerDecoder<Decoded_VkRenderPassBeginInfo>* pRenderPassBegin,
-StructPointerDecoder<Decoded_VkSubpassBeginInfo>*    pSubpassBeginInfo)
+    const ApiCallInfo&                                   call_info,
+    format::HandleId                                     commandBuffer,
+    StructPointerDecoder<Decoded_VkRenderPassBeginInfo>* pRenderPassBegin,
+    StructPointerDecoder<Decoded_VkSubpassBeginInfo>*    pSubpassBeginInfo)
 {
+    GFXRECON_LOG_INFO("TrackBeginRenderPass: In TrackBeginRenderPass2");
+    if (pRenderPassBegin->GetPointer()->pNext)
+    {
+        GFXRECON_LOG_INFO("TrackBeginRenderPass: VkRenderPassBeginInfo has pNext");
+        const auto* pnext =
+            reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->GetPointer()->pNext);
+        while (pnext)
+        {
+            if (pnext->sType == VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM)
+            {
+                const auto* render_mode_info =
+                    reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pnext);
+                GFXRECON_LOG_INFO(
+                    "TrackBeginRenderPass: Found VkRenderModeControlRenderPassBeginInfoQCOM with "
+                    "preferredRenderMode = %u",
+                    render_mode_info->preferredRenderMode);
+            }
+            pnext = pnext->pNext;
+        }
+    }
     VkCommandBuffer in_commandBuffer = MapHandle<
-    VulkanCommandBufferInfo>(commandBuffer, &CommonObjectInfoTable::GetVkCommandBufferInfo);
+        VulkanCommandBufferInfo>(commandBuffer, &CommonObjectInfoTable::GetVkCommandBufferInfo);
 
     PFN_vkCmdWriteTimestamp CmdWriteTimestamp = reinterpret_cast<PFN_vkCmdWriteTimestamp>(
-    GetDeviceTable(in_commandBuffer)->CmdWriteTimestamp);
+        GetDeviceTable(in_commandBuffer)->CmdWriteTimestamp);
 
     Dive::GPUTime::GpuTimeStatus status = gpu_time_.OnCmdBeginRenderPass2(in_commandBuffer,
                                                                           CmdWriteTimestamp);

@@ -24,6 +24,8 @@
 #include PROJECT_VERSION_HEADER_FILE
 
 #include "encode/vulkan_entry_base.h"
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
+
 
 #include "encode/custom_vulkan_layer_func_table.h"
 #include "encode/vulkan_capture_manager.h"
@@ -77,6 +79,7 @@ const std::vector<VulkanEntryBase::VulkanLayerExtensionProps> VulkanEntryBase::k
         "vkDebugMarkerSetObjectTagEXT" } },
     { VkExtensionProperties{ "VK_ANDROID_frame_boundary", 1 }, {}, { "vkFrameBoundaryANDROID" } },
     { VkExtensionProperties{ "VK_EXT_frame_boundary", 1 }, {}, {} },
+    { VkExtensionProperties{ VK_QCOM_RENDER_MODE_CONTROL_EXTENSION_NAME, 1 }, {}, {} },
 };
 
 /// An alphabetical list of device extensions which we do not report upstream if

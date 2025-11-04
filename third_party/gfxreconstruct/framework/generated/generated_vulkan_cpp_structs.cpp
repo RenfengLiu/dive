@@ -14648,6 +14648,34 @@ std::string GenerateStruct_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR
 }
 
 
+std::string GenerateStruct_VkPhysicalDeviceRenderModeControlFeaturesQCOM(std::ostream &out, const VkPhysicalDeviceRenderModeControlFeaturesQCOM* structInfo, Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* metaInfo, VulkanCppConsumerBase &consumer){
+    std::stringstream struct_body;
+    std::string pnext_name = GenerateExtension(out, structInfo->pNext, metaInfo->pNext, consumer);
+    struct_body << "\t" << "VkStructureType(" << structInfo->sType << ")" << "," << std::endl;
+    struct_body << "\t\t\t" << pnext_name << "," << std::endl;
+    struct_body << "\t\t\t" << structInfo->renderModeControl << ",";
+    std::string variable_name = consumer.AddStruct(struct_body, "physicalDeviceRenderModeControlFeaturesQCOM");
+    out << "\t\t" << "VkPhysicalDeviceRenderModeControlFeaturesQCOM " << variable_name << " {" << std::endl;
+    out << "\t\t" << struct_body.str() << std::endl;
+    out << "\t\t" << "};" << std::endl;
+    return variable_name;
+}
+
+
+std::string GenerateStruct_VkRenderModeControlRenderPassBeginInfoQCOM(std::ostream &out, const VkRenderModeControlRenderPassBeginInfoQCOM* structInfo, Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* metaInfo, VulkanCppConsumerBase &consumer){
+    std::stringstream struct_body;
+    std::string pnext_name = GenerateExtension(out, structInfo->pNext, metaInfo->pNext, consumer);
+    struct_body << "\t" << "VkStructureType(" << structInfo->sType << ")" << "," << std::endl;
+    struct_body << "\t\t\t" << pnext_name << "," << std::endl;
+    struct_body << "\t\t\t" << "VkRenderModeQCOM(" << structInfo->preferredRenderMode << ")" << ",";
+    std::string variable_name = consumer.AddStruct(struct_body, "renderModeControlRenderPassBeginInfoQCOM");
+    out << "\t\t" << "VkRenderModeControlRenderPassBeginInfoQCOM " << variable_name << " {" << std::endl;
+    out << "\t\t" << struct_body.str() << std::endl;
+    out << "\t\t" << "};" << std::endl;
+    return variable_name;
+}
+
+
 std::string GenerateStruct_VkDebugReportCallbackCreateInfoEXT(std::ostream &out, const VkDebugReportCallbackCreateInfoEXT* structInfo, Decoded_VkDebugReportCallbackCreateInfoEXT* metaInfo, VulkanCppConsumerBase &consumer){
     std::stringstream struct_body;
     std::string pnext_name = GenerateExtension(out, structInfo->pNext, metaInfo->pNext, consumer);

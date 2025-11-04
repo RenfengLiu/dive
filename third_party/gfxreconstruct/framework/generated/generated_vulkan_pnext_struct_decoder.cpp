@@ -36,6 +36,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include "decode/custom_vulkan_struct_decoders.h"
 #include "decode/decode_allocator.h"
 #include "decode/vulkan_pnext_node.h"
@@ -78,6 +80,8 @@ size_t DecodePNextStruct(const uint8_t* parameter_buffer, size_t buffer_size, PN
         {
             const VkStructureType* sType = reinterpret_cast<const VkStructureType*>(parameter_buffer + stype_offset);
 
+            #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
             switch (*sType)
             {
             default:
@@ -1484,6 +1488,10 @@ size_t DecodePNextStruct(const uint8_t* parameter_buffer, size_t buffer_size, PN
                 (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG>>();
                 bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
                 break;
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM):
+                (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM>>();
+                bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
+                break;
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM:
                 (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkPhysicalDeviceRenderPassStripedFeaturesARM>>();
                 bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
@@ -2092,6 +2100,10 @@ size_t DecodePNextStruct(const uint8_t* parameter_buffer, size_t buffer_size, PN
                 (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkQueueFamilyVideoPropertiesKHR>>();
                 bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
                 break;
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM):
+                (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkRenderModeControlRenderPassBeginInfoQCOM>>();
+                bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
+                break;
             case VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO:
                 (*pNext) = DecodeAllocator::Allocate<PNextTypedNode<Decoded_VkRenderPassAttachmentBeginInfo>>();
                 bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
@@ -2677,6 +2689,7 @@ size_t DecodePNextStruct(const uint8_t* parameter_buffer, size_t buffer_size, PN
                 bytes_read = (*pNext)->Decode(parameter_buffer, buffer_size);
                 break;
             }
+#pragma clang diagnostic pop
         }
     }
 

@@ -41,6 +41,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include <unordered_map>
 #include <vector>
 

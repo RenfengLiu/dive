@@ -161,6 +161,10 @@ if __name__ == '__main__':
             '-video',
             video_path,
         ]
+        gencode_args.extend(
+            ['-headers-dir',
+             os.path.join(SCRIPT_DIR, 'vulkan_ext')]
+        )
         if args.headers_dir is not None:
             if not os.path.isdir(args.headers_dir):
                 raise Exception(

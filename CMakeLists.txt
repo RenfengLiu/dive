@@ -81,6 +81,7 @@ endif()
 configure_file("${CMAKE_SOURCE_DIR}/common/dive_cmake_generated.h.in" "${CMAKE_BINARY_DIR}/generated_include/common/dive_cmake_generated.h")
 
 include_directories("${CMAKE_BINARY_DIR}/generated_include")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/gfxreconstruct/framework/generated/vulkan_ext")
 
 option(DIVE_NO_DISASSEMBLY, "Include builtin shader disassembly.")
 if(DIVE_NO_DISASSEMBLY)

@@ -31,6 +31,8 @@
 
 #include "vulkan/vk_layer.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(encode)
 GFXRECON_BEGIN_NAMESPACE(vulkan_wrappers)
@@ -1096,6 +1098,8 @@ VkBaseInStructure* CopyPNextStruct(const VkBaseInStructure* base, HandleUnwrapMe
     assert(base != nullptr);
 
     VkBaseInStructure* copy = nullptr;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
     switch (base->sType)
     {
     default:
@@ -2157,6 +2161,9 @@ VkBaseInStructure* CopyPNextStruct(const VkBaseInStructure* base, HandleUnwrapMe
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG:
         copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG*>(base), 1, unwrap_memory));
         break;
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM:
+        copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(base), 1, unwrap_memory));
+        break;
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM:
         copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkPhysicalDeviceRenderPassStripedFeaturesARM*>(base), 1, unwrap_memory));
         break;
@@ -2613,6 +2620,9 @@ VkBaseInStructure* CopyPNextStruct(const VkBaseInStructure* base, HandleUnwrapMe
     case VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR:
         copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkQueueFamilyVideoPropertiesKHR*>(base), 1, unwrap_memory));
         break;
+    case VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM:
+        copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(base), 1, unwrap_memory));
+        break;
     case VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO:
         copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkRenderPassAttachmentBeginInfo*>(base), 1, unwrap_memory));
         break;
@@ -3052,6 +3062,7 @@ VkBaseInStructure* CopyPNextStruct(const VkBaseInStructure* base, HandleUnwrapMe
         copy = reinterpret_cast<VkBaseInStructure*>(MakeUnwrapStructs(reinterpret_cast<const VkWriteDescriptorSetPartitionedAccelerationStructureNV*>(base), 1, unwrap_memory));
         break;
     }
+#pragma clang diagnostic pop
 
     return copy;
 }
@@ -3062,9 +3073,10 @@ const void* UnwrapPNextStructHandles(const void* value, HandleUnwrapMemory* unwr
     {
         const VkBaseInStructure* base = reinterpret_cast<const VkBaseInStructure*>(value);
 
-        switch (base->sType)
-        {
-        default:
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wswitch"
+            switch (base->sType)
+            {        default:
         {
             // This structure does not contain handles, but may point to a structure that does.
             VkBaseInStructure* copy = CopyPNextStruct(base, unwrap_memory);

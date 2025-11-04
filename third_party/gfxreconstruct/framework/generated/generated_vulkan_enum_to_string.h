@@ -42,6 +42,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(util)
 template <> std::string ToString<StdVideoAV1ChromaSamplePosition>(const StdVideoAV1ChromaSamplePosition& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
@@ -375,6 +377,7 @@ template <> std::string ToString<VkRayTracingInvocationReorderModeNV>(const VkRa
 template <> std::string ToString<VkRayTracingLssIndexingModeNV>(const VkRayTracingLssIndexingModeNV& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
 template <> std::string ToString<VkRayTracingLssPrimitiveEndCapsModeNV>(const VkRayTracingLssPrimitiveEndCapsModeNV& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
 template <> std::string ToString<VkRayTracingShaderGroupTypeKHR>(const VkRayTracingShaderGroupTypeKHR& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
+template <> std::string ToString<VkRenderModeQCOM>(const VkRenderModeQCOM& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
 template <> std::string ToString<VkRenderPassCreateFlagBits>(const VkRenderPassCreateFlagBits& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
 template <> std::string ToString<VkRenderPassCreateFlagBits>(VkFlags vkFlags, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);
 template <> std::string ToString<VkRenderingFlagBits>(const VkRenderingFlagBits& value, ToStringFlags toStringFlags, uint32_t tabCount, uint32_t tabSize);

@@ -34,6 +34,8 @@
 #include "decode/vulkan_handle_mapping_util.h"
 #include "generated/generated_vulkan_struct_decoders.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include <algorithm>
 #include <cassert>
 

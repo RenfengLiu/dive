@@ -32,6 +32,8 @@
 #include "encode/vulkan_handle_wrapper_util.h"
 #include "encode/vulkan_state_info.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(encode)
 

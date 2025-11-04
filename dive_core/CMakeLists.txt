@@ -123,7 +123,7 @@ file(GLOB_RECURSE COMMON_SRC_FILES "${CMAKE_SOURCE_DIR}/dive_core/common/*.cpp")
 
 file(GLOB_RECURSE FREEDRENO_SRC_FILES "${THIRDPARTY_DIRECTORY}/mesa/src/freedreno/common/freedreno_dev_info.c")
 
-include_directories(${THIRDPARTY_DIRECTORY}/Vulkan-Headers/include ${CMAKE_SOURCE_DIR} ${DIVE_CORE_GENERATED_FILE_DIR} ${FREEDRENO_ISA_DIRECTORY})
+include_directories(${THIRDPARTY_DIRECTORY}/Vulkan-Headers/include ${CMAKE_SOURCE_DIR} ${DIVE_CORE_GENERATED_FILE_DIR} ${FREEDRENO_ISA_DIRECTORY} ${CMAKE_SOURCE_DIR}/third_party/gfxreconstruct/framework/generated/vulkan_ext)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/freedreno/common)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/include/)

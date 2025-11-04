@@ -43,6 +43,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include <cassert>
 #include <cstdio>
 #include <memory>
@@ -64,6 +66,10 @@ void EncodePNextStruct(ParameterEncoder* encoder, const void* value)
 
     if (base != nullptr)
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
         switch (base->sType)
         {
         default:
@@ -1127,6 +1133,9 @@ void EncodePNextStruct(ParameterEncoder* encoder, const void* value)
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG:
             EncodeStructPtr(encoder, reinterpret_cast<const VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG*>(base));
             break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM:
+            EncodeStructPtr(encoder, reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(base));
+            break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM:
             EncodeStructPtr(encoder, reinterpret_cast<const VkPhysicalDeviceRenderPassStripedFeaturesARM*>(base));
             break;
@@ -1583,6 +1592,9 @@ void EncodePNextStruct(ParameterEncoder* encoder, const void* value)
         case VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR:
             EncodeStructPtr(encoder, reinterpret_cast<const VkQueueFamilyVideoPropertiesKHR*>(base));
             break;
+        case VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM:
+            EncodeStructPtr(encoder, reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(base));
+            break;
         case VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO:
             EncodeStructPtr(encoder, reinterpret_cast<const VkRenderPassAttachmentBeginInfo*>(base));
             break;
@@ -2022,13 +2034,14 @@ void EncodePNextStruct(ParameterEncoder* encoder, const void* value)
             EncodeStructPtr(encoder, reinterpret_cast<const VkWriteDescriptorSetPartitionedAccelerationStructureNV*>(base));
             break;
         }
+#pragma clang diagnostic pop
     }
     else
     {
         // pNext was either NULL or an ignored loader specific struct.  Write an encoding for a NULL pointer.
         encoder->EncodeStructPtrPreamble(nullptr);
-    }
-}
-
+            }
+    #pragma clang diagnostic pop
+        }
 GFXRECON_END_NAMESPACE(encode)
 GFXRECON_END_NAMESPACE(gfxrecon)

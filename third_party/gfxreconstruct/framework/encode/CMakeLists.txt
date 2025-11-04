@@ -182,6 +182,7 @@ target_include_directories(gfxrecon_encode
                            PUBLIC
                                ${CMAKE_BINARY_DIR}
                                ${PROJECT_SOURCE_DIR}/framework
+                               ${PROJECT_SOURCE_DIR}/framework/generated/vulkan_ext
                                $<$<BOOL:${D3D12_SUPPORT}>:${D3D12_INCLUDE_DIRECTORIES}>)
 
 target_link_libraries(gfxrecon_encode
