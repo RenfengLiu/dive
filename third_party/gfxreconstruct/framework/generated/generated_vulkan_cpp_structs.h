@@ -1384,6 +1384,10 @@ std::string GenerateStruct_VkPhysicalDeviceRobustness2PropertiesKHR(std::ostream
 
 std::string GenerateStruct_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(std::ostream &out, const VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR* structInfo, Decoded_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR* metaInfo, VulkanCppConsumerBase &consumer);
 
+std::string GenerateStruct_VkPhysicalDeviceRenderModeControlFeaturesQCOM(std::ostream &out, const VkPhysicalDeviceRenderModeControlFeaturesQCOM* structInfo, Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* metaInfo, VulkanCppConsumerBase &consumer);
+
+std::string GenerateStruct_VkRenderModeControlRenderPassBeginInfoQCOM(std::ostream &out, const VkRenderModeControlRenderPassBeginInfoQCOM* structInfo, Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* metaInfo, VulkanCppConsumerBase &consumer);
+
 std::string GenerateStruct_VkDebugReportCallbackCreateInfoEXT(std::ostream &out, const VkDebugReportCallbackCreateInfoEXT* structInfo, Decoded_VkDebugReportCallbackCreateInfoEXT* metaInfo, VulkanCppConsumerBase &consumer);
 
 std::string GenerateStruct_VkPipelineRasterizationStateRasterizationOrderAMD(std::ostream &out, const VkPipelineRasterizationStateRasterizationOrderAMD* structInfo, Decoded_VkPipelineRasterizationStateRasterizationOrderAMD* metaInfo, VulkanCppConsumerBase &consumer);

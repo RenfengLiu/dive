@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registry>
+    <types>
+        <type category="enum" name="VkRenderModeQCOM"/>
+        <type category="struct" name="VkRenderModeControlRenderPassBeginInfoQCOM" structextends="VkRenderPassBeginInfo">
+            <member values="VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM"><type>VkStructureType</type> <name>sType</name></member>
+            <member><type>void</type> const* <name>pNext</name></member>
+            <member><type>VkRenderModeQCOM</type> <name>preferredRenderMode</name></member>
+        </type>
+        <type category="struct" name="VkPhysicalDeviceRenderModeControlFeaturesQCOM" structextends="VkPhysicalDeviceFeatures2,VkDeviceCreateInfo">
+            <member values="VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM"><type>VkStructureType</type> <name>sType</name></member>
+            <member><type>void</type>* <name>pNext</name></member>
+            <member><type>VkBool32</type> <name>renderModeControl</name></member>
+        </type>
+    </types>
+    <enums name="VkRenderModeQCOM" type="enum">
+        <enum value="0" name="VK_RENDER_MODE_OPTIMAL_QCOM"/>
+        <enum value="1" name="VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM"/>
+        <enum value="2" name="VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM"/>
+    </enums>
+    <extensions>
+        <extension name="VK_QCOM_render_mode_control" type="device" supported="vulkan">
+            <require>
+                <type name="VkRenderModeControlRenderPassBeginInfoQCOM"/>
+                <type name="VkPhysicalDeviceRenderModeControlFeaturesQCOM"/>
+            </require>
+        </extension>
+    </extensions>
+</registry>

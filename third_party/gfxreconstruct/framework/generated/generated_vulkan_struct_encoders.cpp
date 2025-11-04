@@ -43,6 +43,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(encode)
 
@@ -6994,6 +6996,20 @@ void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDevicePresentModeFi
     encoder->EncodeEnumValue(value.sType);
     EncodePNextStruct(encoder, value.pNext);
     encoder->EncodeUInt32Value(value.presentModeFifoLatestReady);
+}
+
+void EncodeStruct(ParameterEncoder* encoder, const VkRenderModeControlRenderPassBeginInfoQCOM& value)
+{
+    encoder->EncodeEnumValue(value.sType);
+    EncodePNextStruct(encoder, value.pNext);
+    encoder->EncodeEnumValue(value.preferredRenderMode);
+}
+
+void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceRenderModeControlFeaturesQCOM& value)
+{
+    encoder->EncodeEnumValue(value.sType);
+    EncodePNextStruct(encoder, value.pNext);
+    encoder->EncodeUInt32Value(value.renderModeControl);
 }
 
 void EncodeStruct(ParameterEncoder* encoder, const VkDebugReportCallbackCreateInfoEXT& value)

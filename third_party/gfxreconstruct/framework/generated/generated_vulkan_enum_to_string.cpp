@@ -29,6 +29,8 @@
 
 #include "generated_vulkan_enum_to_string.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(util)
 template <> std::string ToString<StdVideoAV1ChromaSamplePosition>(const StdVideoAV1ChromaSamplePosition& value, ToStringFlags, uint32_t, uint32_t)
@@ -4418,6 +4420,17 @@ template <> std::string ToString<VkRayTracingShaderGroupTypeKHR>(const VkRayTrac
     default: break;
     }
     return "Unhandled VkRayTracingShaderGroupTypeKHR";
+}
+
+template <> std::string ToString<VkRenderModeQCOM>(const VkRenderModeQCOM& value, ToStringFlags, uint32_t, uint32_t)
+{
+    switch (value) {
+    case VK_RENDER_MODE_OPTIMAL_QCOM: return "VK_RENDER_MODE_OPTIMAL_QCOM";
+    case VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM: return "VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM";
+    case VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM: return "VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM";
+    default: break;
+    }
+    return "Unhandled VkRenderModeQCOM";
 }
 
 template <> std::string ToString<VkRenderPassCreateFlagBits>(const VkRenderPassCreateFlagBits& value, ToStringFlags, uint32_t, uint32_t)

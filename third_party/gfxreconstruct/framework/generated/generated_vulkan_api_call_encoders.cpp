@@ -40,6 +40,7 @@
 #include "generated/generated_vulkan_command_buffer_util.h"
 #include "generated/generated_vulkan_struct_handle_wrappers.h"
 #include "util/defines.h"
+#include "util/logging.h"
 
 #include "vulkan/vulkan.h"
 #include "vk_video/vulkan_video_codec_h264std.h"
@@ -49,6 +50,8 @@
 #include "vk_video/vulkan_video_codec_h265std_decode.h"
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
+
+#include "vk_qcom_render_mode_control.h"
 
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(encode)
@@ -5302,6 +5305,21 @@ VKAPI_ATTR void VKAPI_CALL vkCmdBeginRenderPass(
     }
 
     CustomEncoderPreCall<format::ApiCallId::ApiCall_vkCmdBeginRenderPass>::Dispatch(manager, commandBuffer, pRenderPassBegin, contents);
+
+    if (pRenderPassBegin)
+    {
+        const VkBaseInStructure* pNext = reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->pNext);
+        while (pNext)
+        {
+            if (pNext->sType == VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM)
+            {
+                const VkRenderModeControlRenderPassBeginInfoQCOM* render_mode_info = reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pNext);
+                GFXRECON_LOG_INFO("Found VK_QCOM_render_mode_control extension in vkCmdBeginRenderPass. preferredRenderMode = %d", render_mode_info->preferredRenderMode);
+            }
+            pNext = pNext->pNext;
+        }
+    }
+
 
     auto encoder = manager->BeginTrackedApiCallCapture(format::ApiCallId::ApiCall_vkCmdBeginRenderPass);
     if (encoder)

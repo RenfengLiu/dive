@@ -29,6 +29,8 @@
 
 #include "generated/generated_vulkan_referenced_resource_consumer.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include <cassert>
 
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)

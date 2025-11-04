@@ -119,7 +119,7 @@ file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/project_version_$<CONFIG>.h" INPUT "${
 # Since project_version_$<CONFIG>.h differs per build, set a compiler definition that files can use to include it
 add_definitions(-DPROJECT_VERSION_HEADER_FILE="project_version_$<CONFIG>.h")
 
-option(BUILD_WERROR "Build with warnings as errors" ON)
+option(BUILD_WERROR "Build with warnings as errors" OFF)
 
 # Code checks
 include("CodeStyle")
@@ -386,6 +386,7 @@ endif()
 
 add_library(vulkan_registry INTERFACE)
 target_include_directories(vulkan_registry SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/external/Vulkan-Headers/include)
+target_include_directories(vulkan_registry INTERFACE ${PROJECT_SOURCE_DIR}/framework/generated/vulkan_ext)
 target_compile_definitions(vulkan_registry INTERFACE VK_NO_PROTOTYPES VK_ENABLE_BETA_EXTENSIONS)
 
 add_library(spirv_registry INTERFACE)

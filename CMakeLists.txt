@@ -86,6 +86,7 @@ configure_file(
 )
 
 include_directories("${CMAKE_BINARY_DIR}/generated_include")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/gfxreconstruct/framework/generated/vulkan_ext")
 
 option(DIVE_NO_DISASSEMBLY, "Include builtin shader disassembly." ON)
 if(DIVE_NO_DISASSEMBLY)

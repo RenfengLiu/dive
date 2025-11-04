@@ -36,6 +36,7 @@
 #include "Vulkan-Utility-Libraries/vk_format_utils.h"
 #include "util/to_string.h"
 #include "vulkan/vulkan_core.h"
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
 
 #include "util/page_status_tracker.h"
 
@@ -641,6 +642,86 @@ void VulkanStateTracker::TrackMappedMemory(VkDevice         device,
     }
 }
 
+void VulkanStateTracker::TrackCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
+                                                 const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                 VkSubpassContents            contents)
+{
+    assert((commandBuffer != VK_NULL_HANDLE) && (pRenderPassBegin != nullptr));
+
+    auto wrapper = vulkan_wrappers::GetWrapper<vulkan_wrappers::CommandBufferWrapper>(commandBuffer);
+    wrapper->active_render_pass =
+        vulkan_wrappers::GetWrapper<vulkan_wrappers::RenderPassWrapper>(pRenderPassBegin->renderPass);
+    wrapper->render_pass_framebuffer =
+        vulkan_wrappers::GetWrapper<vulkan_wrappers::FramebufferWrapper>(pRenderPassBegin->framebuffer);
+//  GFXRECON_LOG_INFO("TrackCmdBeginRenderPass ");
+    const auto* pnext = reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->pNext);
+    while (pnext)
+    {
+        GFXRECON_LOG_INFO("pRenderPassBegin has pnext");
+        if (pnext->sType == VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM)
+        {
+            GFXRECON_LOG_INFO("pRenderPassBegin has pnext VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM");
+            const auto* render_mode_info = reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(pnext);
+            wrapper->active_render_mode = render_mode_info->preferredRenderMode;
+            break;
+        }
+        pnext = pnext->pNext;
+    }
+
+    if (wrapper->render_pass_framebuffer != nullptr)
+    {
+        for (size_t i = 0; i < wrapper->render_pass_framebuffer->attachments.size(); ++i)
+        {
+            if (wrapper->render_pass_framebuffer->attachments[i]->is_swapchain_image)
+            {
+                continue;
+            }
+
+            const bool has_stencil = vkuFormatHasStencil(wrapper->render_pass_framebuffer->attachments[i]->format);
+            if ((!has_stencil &&
+                 wrapper->active_render_pass->attachment_info.store_op[i] == VK_ATTACHMENT_STORE_OP_STORE) ||
+                (has_stencil &&
+                 wrapper->active_render_pass->attachment_info.stencil_store_op[i] == VK_ATTACHMENT_STORE_OP_STORE))
+            {
+                wrapper->modified_assets.insert(wrapper->render_pass_framebuffer->attachments[i]);
+            }
+        }
+    }
+}
+
+void VulkanStateTracker::TrackCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+                                                  const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                  const VkSubpassBeginInfo*    pSubpassBeginInfo)
+{
+    assert((commandBuffer != VK_NULL_HANDLE) && (pRenderPassBegin != nullptr));
+
+    auto wrapper = vulkan_wrappers::GetWrapper<vulkan_wrappers::CommandBufferWrapper>(commandBuffer);
+    wrapper->active_render_pass =
+        vulkan_wrappers::GetWrapper<vulkan_wrappers::RenderPassWrapper>(pRenderPassBegin->renderPass);
+    wrapper->render_pass_framebuffer =
+        vulkan_wrappers::GetWrapper<vulkan_wrappers::FramebufferWrapper>(pRenderPassBegin->framebuffer);
+
+    if (wrapper->render_pass_framebuffer != nullptr)
+    {
+        for (size_t i = 0; i < wrapper->render_pass_framebuffer->attachments.size(); ++i)
+        {
+            if (wrapper->render_pass_framebuffer->attachments[i]->is_swapchain_image)
+            {
+                continue;
+            }
+
+            const bool has_stencil = vkuFormatHasStencil(wrapper->render_pass_framebuffer->attachments[i]->format);
+            if ((!has_stencil &&
+                 wrapper->active_render_pass->attachment_info.store_op[i] == VK_ATTACHMENT_STORE_OP_STORE) ||
+                (has_stencil &&
+                 wrapper->active_render_pass->attachment_info.stencil_store_op[i] == VK_ATTACHMENT_STORE_OP_STORE))
+            {
+                wrapper->modified_assets.insert(wrapper->render_pass_framebuffer->attachments[i]);
+            }
+        }
+    }
+}
+
 void VulkanStateTracker::TrackBeginRenderPass(VkCommandBuffer command_buffer, const VkRenderPassBeginInfo* begin_info)
 {
     assert((command_buffer != VK_NULL_HANDLE) && (begin_info != nullptr));
@@ -695,6 +776,7 @@ void VulkanStateTracker::TrackEndRenderPass(VkCommandBuffer command_buffer)
     // Clear the active render pass state now that the pass has ended.
     wrapper->active_render_pass      = nullptr;
     wrapper->render_pass_framebuffer = nullptr;
+    wrapper->active_render_mode      = VK_RENDER_MODE_OPTIMAL_QCOM;
 }
 
 void VulkanStateTracker::TrackExecuteCommands(VkCommandBuffer        command_buffer,

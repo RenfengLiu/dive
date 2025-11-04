@@ -23,6 +23,8 @@
  */
 
 #include "encode/vulkan_handle_wrappers.h"
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
+#include "generated/generated_vulkan_enum_to_string.h"
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
 #include PROJECT_VERSION_HEADER_FILE
@@ -66,11 +68,12 @@ graphics::VulkanLayerTable VulkanCaptureManager::vulkan_layer_table_;
 
 bool VulkanCaptureManager::CreateInstance()
 {
+    GFXRECON_LOG_WARNING("VulkanCaptureManager::CreateInstance() called.");
 
     bool result = CommonCaptureManager::CreateInstance<VulkanCaptureManager>();
     GFXRECON_ASSERT(singleton_);
 
-    GFXRECON_LOG_INFO("  Vulkan Header Version %u.%u.%u",
+    GFXRECON_LOG_WARNING("  Vulkan Header Version %u.%u.%u",
                       VK_VERSION_MAJOR(VK_HEADER_VERSION_COMPLETE),
                       VK_VERSION_MINOR(VK_HEADER_VERSION_COMPLETE),
                       VK_VERSION_PATCH(VK_HEADER_VERSION_COMPLETE));
@@ -681,6 +684,8 @@ VkResult VulkanCaptureManager::OverrideCreateDevice(VkPhysicalDevice            
             modified_extensions.push_back(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME);
         }
     }
+
+    // modified_extensions.push_back(VK_QCOM_RENDER_MODE_CONTROL_EXTENSION_NAME);
 
     pCreateInfo_unwrapped->enabledExtensionCount   = static_cast<uint32_t>(modified_extensions.size());
     pCreateInfo_unwrapped->ppEnabledExtensionNames = modified_extensions.data();
@@ -2842,6 +2847,8 @@ void VulkanCaptureManager::PreProcess_vkQueueSubmit(std::shared_lock<CommonCaptu
                                                     const VkSubmitInfo*                                    pSubmits,
                                                     VkFence                                                fence)
 {
+    //GFXRECON_LOG_WARNING("PreProcess_vkQueueSubmit called with submitCount = %u", submitCount);
+
     GFXRECON_UNREFERENCED_PARAMETER(queue);
     GFXRECON_UNREFERENCED_PARAMETER(submitCount);
     GFXRECON_UNREFERENCED_PARAMETER(pSubmits);
@@ -2878,6 +2885,8 @@ void VulkanCaptureManager::PreProcess_vkQueueSubmit2(
     const VkSubmitInfo2*                                   pSubmits,
     VkFence                                                fence)
 {
+    GFXRECON_LOG_WARNING("PreProcess_vkQueueSubmit2 called with submitCount = %u", submitCount);
+
     GFXRECON_UNREFERENCED_PARAMETER(queue);
     GFXRECON_UNREFERENCED_PARAMETER(submitCount);
     GFXRECON_UNREFERENCED_PARAMETER(pSubmits);
@@ -3911,9 +3920,120 @@ void VulkanCaptureManager::PostProcess_vkCmdDrawMeshTasksIndirectCountEXT(VkComm
     }
 }
 
+void VulkanCaptureManager::PreProcess_vkCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
+                                                           const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                           VkSubpassContents            contents)
+{
+    if (pRenderPassBegin != nullptr)
+    {
+        if (pRenderPassBegin->pNext != nullptr)
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderPass: pNext chain detected on PreProcess.");
+            const VkBaseInStructure* pNext = reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->pNext);
+            while (pNext != nullptr)
+            {
+                GFXRECON_LOG_WARNING("  pNext->sType = %s", util::ToString(pNext->sType).c_str());
+                pNext = pNext->pNext;
+            }
+        }
+        else
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderPass: No pNext chain on PreProcess.");
+        }
+    }
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
+                                                            const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                            VkSubpassContents            contents)
+{
+    if (IsCaptureModeTrack())
+    {
+        state_tracker_->TrackCmdBeginRenderPass(commandBuffer, pRenderPassBegin, contents);
+    }
+}
+
+void VulkanCaptureManager::PreProcess_vkCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+                                                            const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                            const VkSubpassBeginInfo*    pSubpassBeginInfo)
+{
+    if (pRenderPassBegin != nullptr)
+    {
+        if (pRenderPassBegin->pNext != nullptr)
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderPass2: pNext chain detected on PreProcess.");
+            const VkBaseInStructure* pNext = reinterpret_cast<const VkBaseInStructure*>(pRenderPassBegin->pNext);
+            while (pNext != nullptr)
+            {
+                GFXRECON_LOG_WARNING("  pNext->sType = %s", util::ToString(pNext->sType).c_str());
+                pNext = pNext->pNext;
+            }
+        }
+        else
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderPass2: No pNext chain on PreProcess.");
+        }
+    }
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+                                                             const VkRenderPassBeginInfo* pRenderPassBegin,
+                                                             const VkSubpassBeginInfo*    pSubpassBeginInfo)
+{
+    if (IsCaptureModeTrack())
+    {
+        state_tracker_->TrackCmdBeginRenderPass2(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
+    }
+}
+
 void VulkanCaptureManager::PostProcess_vkCmdBeginRendering(VkCommandBuffer        commandBuffer,
                                                            const VkRenderingInfo* pRenderingInfo)
 {
+    if (pRenderingInfo != nullptr)
+    {
+        if (pRenderingInfo->pNext != nullptr)
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRendering: pNext chain detected.");
+            const VkBaseInStructure* pNext = reinterpret_cast<const VkBaseInStructure*>(pRenderingInfo->pNext);
+            while (pNext != nullptr)
+            {
+                GFXRECON_LOG_WARNING("  pNext->sType = %s", util::ToString(pNext->sType).c_str());
+                pNext = pNext->pNext;
+            }
+        }
+        else
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRendering: No pNext chain.");
+        }
+    }
+
+    if (IsCaptureModeTrack())
+    {
+        state_tracker_->TrackBeginRendering(commandBuffer, pRenderingInfo);
+    }
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdBeginRenderingKHR(VkCommandBuffer        commandBuffer,
+                                                              const VkRenderingInfo* pRenderingInfo)
+{
+    if (pRenderingInfo != nullptr)
+    {
+        if (pRenderingInfo->pNext != nullptr)
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderingKHR: pNext chain detected.");
+            const VkBaseInStructure* pNext = reinterpret_cast<const VkBaseInStructure*>(pRenderingInfo->pNext);
+            while (pNext != nullptr)
+            {
+                GFXRECON_LOG_WARNING("  pNext->sType = %s", util::ToString(pNext->sType).c_str());
+                pNext = pNext->pNext;
+            }
+        }
+        else
+        {
+            GFXRECON_LOG_WARNING("vkCmdBeginRenderingKHR: No pNext chain.");
+        }
+    }
+
     if (IsCaptureModeTrack())
     {
         state_tracker_->TrackBeginRendering(commandBuffer, pRenderingInfo);
@@ -3948,6 +4068,23 @@ void VulkanCaptureManager::PostProcess_vkSetDebugUtilsObjectTagEXT(VkResult     
             state_tracker_->TrackSetDebugUtilsObjectTagEXT(device, pTagInfo, thread_data->parameter_buffer_.get());
         }
     }
+}
+
+void VulkanCaptureManager::PreProcess_vkCmdExecuteCommands(VkCommandBuffer        commandBuffer,
+                                                             uint32_t             commandBufferCount,
+                                                             const VkCommandBuffer* pCommandBuffers)
+{
+    GFXRECON_LOG_WARNING("PreProcess_vkCmdExecuteCommands called with commandBufferCount = %u", commandBufferCount);
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdExecuteCommands(VkCommandBuffer        commandBuffer,
+                                                              uint32_t             commandBufferCount,
+                                                              const VkCommandBuffer* pCommandBuffers)
+{
+    GFXRECON_LOG_WARNING("PostProcess_vkCmdExecuteCommands called with commandBufferCount = %u", commandBufferCount);
+    GFXRECON_UNREFERENCED_PARAMETER(commandBuffer);
+    GFXRECON_UNREFERENCED_PARAMETER(commandBufferCount);
+    GFXRECON_UNREFERENCED_PARAMETER(pCommandBuffers);
 }
 
 #if ENABLE_OPENXR_SUPPORT

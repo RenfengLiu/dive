@@ -30,3 +30,5 @@ local_notebooks/*.ipynb
 .env
 
 install/
+gfxr_capture/
+dump/

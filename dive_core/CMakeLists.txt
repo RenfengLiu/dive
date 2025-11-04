@@ -141,7 +141,7 @@ include_directories(
     ${THIRDPARTY_DIRECTORY}/Vulkan-Headers/include
     ${CMAKE_SOURCE_DIR}
     ${DIVE_CORE_GENERATED_FILE_DIR}
-    ${FREEDRENO_ISA_DIRECTORY}
+    ${FREEDRENO_ISA_DIRECTORY} ${CMAKE_SOURCE_DIR}/third_party/gfxreconstruct/framework/generated/vulkan_ext
 )
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/freedreno/common)
 include_directories(${THIRDPARTY_DIRECTORY}/mesa/src/)

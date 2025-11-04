@@ -30,6 +30,8 @@
 #include "generated_vulkan_enum_to_json.h"
 #include "util/to_string.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 using util::JsonOptions;
@@ -8265,6 +8267,24 @@ void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingShaderGroupTyp
             break;
         case VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR:
             jdata = "VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR";
+            break;
+        default:
+            jdata = to_hex_fixed_width(value);
+            break;
+    }
+}
+
+void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderModeQCOM& value, const JsonOptions& options)
+{
+    switch (value) {
+        case VK_RENDER_MODE_OPTIMAL_QCOM:
+            jdata = "VK_RENDER_MODE_OPTIMAL_QCOM";
+            break;
+        case VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM:
+            jdata = "VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM";
+            break;
+        case VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM:
+            jdata = "VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM";
             break;
         default:
             jdata = to_hex_fixed_width(value);

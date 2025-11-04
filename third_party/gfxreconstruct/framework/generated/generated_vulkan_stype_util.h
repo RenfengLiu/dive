@@ -42,6 +42,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(util)
 
@@ -557,6 +559,8 @@ template <> constexpr VkStructureType GetSType<VkPhysicalDeviceDepthClampZeroOne
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceRobustness2FeaturesKHR>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceRobustness2PropertiesKHR>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR; }
+template <> constexpr VkStructureType GetSType<VkRenderModeControlRenderPassBeginInfoQCOM>(){ return static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM); }
+template <> constexpr VkStructureType GetSType<VkPhysicalDeviceRenderModeControlFeaturesQCOM>(){ return static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM); }
 template <> constexpr VkStructureType GetSType<VkDebugReportCallbackCreateInfoEXT>(){ return VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT; }
 template <> constexpr VkStructureType GetSType<VkPipelineRasterizationStateRasterizationOrderAMD>(){ return VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD; }
 template <> constexpr VkStructureType GetSType<VkDebugMarkerObjectNameInfoEXT>(){ return VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT; }

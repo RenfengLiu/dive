@@ -31,6 +31,8 @@
 #include "generated_vulkan_enum_to_json.h"
 #include "util/to_string.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 using util::JsonOptions;
@@ -11016,6 +11018,32 @@ void FieldToJson(nlohmann::ordered_json& jdata, const Decoded_VkPhysicalDevicePr
     }
 }
 
+void FieldToJson(nlohmann::ordered_json& jdata, const Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* data, const JsonOptions& options)
+{
+    if (data && data->decoded_value)
+    {
+        const VkRenderModeControlRenderPassBeginInfoQCOM& decoded_value = *data->decoded_value;
+        const Decoded_VkRenderModeControlRenderPassBeginInfoQCOM& meta_struct = *data;
+
+        FieldToJson(jdata["sType"], decoded_value.sType, options);
+        FieldToJson(jdata["preferredRenderMode"], decoded_value.preferredRenderMode, options);
+        FieldToJson(jdata["pNext"], meta_struct.pNext, options);
+    }
+}
+
+void FieldToJson(nlohmann::ordered_json& jdata, const Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* data, const JsonOptions& options)
+{
+    if (data && data->decoded_value)
+    {
+        const VkPhysicalDeviceRenderModeControlFeaturesQCOM& decoded_value = *data->decoded_value;
+        const Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM& meta_struct = *data;
+
+        FieldToJson(jdata["sType"], decoded_value.sType, options);
+        jdata["renderModeControl"] = static_cast<bool>(decoded_value.renderModeControl);
+        FieldToJson(jdata["pNext"], meta_struct.pNext, options);
+    }
+}
+
 void FieldToJson(nlohmann::ordered_json& jdata, const Decoded_VkDebugReportCallbackCreateInfoEXT* data, const JsonOptions& options)
 {
     if (data && data->decoded_value)
@@ -18653,6 +18681,8 @@ void FieldToJson(nlohmann::ordered_json& jdata, const PNextNode* data, const Jso
     if (data && data->GetPointer())
     {
         const auto s_type = reinterpret_cast<const VkBaseInStructure*>(data->GetPointer())->sType;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
         switch (s_type)
         {
             case VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV:
@@ -21105,6 +21135,13 @@ void FieldToJson(nlohmann::ordered_json& jdata, const PNextNode* data, const Jso
                 break;
             }
 
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM):
+            {
+                const auto* pnext = reinterpret_cast<const Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(data->GetMetaStructPointer());
+                FieldToJson(jdata, pnext, options);
+                break;
+            }
+
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM:
             {
                 const auto* pnext = reinterpret_cast<const Decoded_VkPhysicalDeviceRenderPassStripedFeaturesARM*>(data->GetMetaStructPointer());
@@ -22169,6 +22206,13 @@ void FieldToJson(nlohmann::ordered_json& jdata, const PNextNode* data, const Jso
                 break;
             }
 
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM):
+            {
+                const auto* pnext = reinterpret_cast<const Decoded_VkRenderModeControlRenderPassBeginInfoQCOM*>(data->GetMetaStructPointer());
+                FieldToJson(jdata, pnext, options);
+                break;
+            }
+
             case VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO:
             {
                 const auto* pnext = reinterpret_cast<const Decoded_VkRenderPassAttachmentBeginInfo*>(data->GetMetaStructPointer());
@@ -23196,6 +23240,7 @@ void FieldToJson(nlohmann::ordered_json& jdata, const PNextNode* data, const Jso
                 GFXRECON_LOG_WARNING("Unknown pnext node type: %u.", (unsigned) s_type);
             }
         }
+#pragma clang diagnostic pop
     }
 }
 

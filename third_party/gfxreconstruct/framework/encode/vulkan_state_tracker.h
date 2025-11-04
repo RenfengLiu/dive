@@ -388,6 +388,11 @@ class VulkanStateTracker
                            VkMemoryMapFlags mapped_flags,
                            bool             track_assets);
 
+    void TrackCmdBeginRenderPass(VkCommandBuffer command_buffer, const VkRenderPassBeginInfo* begin_info, VkSubpassContents contents);
+
+    void TrackCmdBeginRenderPass2(VkCommandBuffer command_buffer, const VkRenderPassBeginInfo* begin_info, const VkSubpassBeginInfo* subpass_begin_info);
+
+
     void TrackBeginRenderPass(VkCommandBuffer command_buffer, const VkRenderPassBeginInfo* begin_info);
 
     void TrackEndRenderPass(VkCommandBuffer command_buffer);

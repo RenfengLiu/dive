@@ -58,6 +58,7 @@
 #include "generated/generated_vulkan_enum_to_string.h"
 #include "util/to_string.h"
 #include "vulkan/vulkan_core.h"
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -3063,6 +3064,8 @@ void VulkanReplayConsumerBase::ModifyCreateDeviceInfo(
             modified_extensions.push_back(VK_EXT_FRAME_BOUNDARY_EXTENSION_NAME);
         }
     }
+
+    // modified_extensions.push_back(VK_QCOM_RENDER_MODE_CONTROL_EXTENSION_NAME);
 
     // Sanity checks depending on extension availability
     std::vector<VkExtensionProperties> available_extensions;

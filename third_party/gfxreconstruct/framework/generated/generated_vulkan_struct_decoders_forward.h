@@ -41,6 +41,8 @@
 #include "vk_video/vulkan_video_codec_h265std_encode.h"
 #include "vk_video/vulkan_video_codecs_common.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 #include <cstdint>
 
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
@@ -724,6 +726,8 @@ struct Decoded_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR;
 struct Decoded_VkPhysicalDeviceRobustness2FeaturesKHR;
 struct Decoded_VkPhysicalDeviceRobustness2PropertiesKHR;
 struct Decoded_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR;
+struct Decoded_VkRenderModeControlRenderPassBeginInfoQCOM;
+struct Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM;
 struct Decoded_VkDebugReportCallbackCreateInfoEXT;
 struct Decoded_VkPipelineRasterizationStateRasterizationOrderAMD;
 struct Decoded_VkDebugMarkerObjectNameInfoEXT;
@@ -1925,6 +1929,8 @@ size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceRobustness2FeaturesKHR* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceRobustness2PropertiesKHR* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR* wrapper);
+size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* wrapper);
+size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkDebugReportCallbackCreateInfoEXT* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPipelineRasterizationStateRasterizationOrderAMD* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkDebugMarkerObjectNameInfoEXT* wrapper);

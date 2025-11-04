@@ -71,6 +71,7 @@ target_compile_definitions(platform_specific INTERFACE
 
 add_library(vulkan_registry INTERFACE)
 target_include_directories(vulkan_registry INTERFACE ${GFXRECON_SOURCE_DIR}/external/Vulkan-Headers/include)
+target_include_directories(vulkan_registry INTERFACE ${GFXRECON_SOURCE_DIR}/framework/generated/vulkan_ext)
 target_compile_definitions(vulkan_registry INTERFACE VK_NO_PROTOTYPES VK_ENABLE_BETA_EXTENSIONS)
 
 add_library(spirv_registry INTERFACE)

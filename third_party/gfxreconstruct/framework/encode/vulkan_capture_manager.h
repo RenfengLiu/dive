@@ -956,27 +956,31 @@ class VulkanCaptureManager : public ApiCaptureManager
         }
     }
 
-    void PostProcess_vkCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
-                                          const VkRenderPassBeginInfo* pRenderPassBegin,
-                                          VkSubpassContents)
-    {
-        if (IsCaptureModeTrack())
-        {
-            assert(state_tracker_ != nullptr);
-            state_tracker_->TrackBeginRenderPass(commandBuffer, pRenderPassBegin);
-        }
-    }
+        void PreProcess_vkCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
 
-    void PostProcess_vkCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
-                                           const VkRenderPassBeginInfo* pRenderPassBegin,
-                                           const VkSubpassBeginInfoKHR*)
-    {
-        if (IsCaptureModeTrack())
-        {
-            assert(state_tracker_ != nullptr);
-            state_tracker_->TrackBeginRenderPass(commandBuffer, pRenderPassBegin);
-        }
-    }
+                                             const VkRenderPassBeginInfo* pRenderPassBegin,
+
+                                             VkSubpassContents            contents);
+
+        void PostProcess_vkCmdBeginRenderPass(VkCommandBuffer              commandBuffer,
+
+                                              const VkRenderPassBeginInfo* pRenderPassBegin,
+
+                                              VkSubpassContents            contents);
+
+    
+
+        void PreProcess_vkCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+
+                                              const VkRenderPassBeginInfo* pRenderPassBegin,
+
+                                              const VkSubpassBeginInfo*    pSubpassBeginInfo);
+
+        void PostProcess_vkCmdBeginRenderPass2(VkCommandBuffer              commandBuffer,
+
+                                               const VkRenderPassBeginInfo* pRenderPassBegin,
+
+                                               const VkSubpassBeginInfo*    pSubpassBeginInfo);
 
     void PostProcess_vkCmdEndRenderPass(VkCommandBuffer commandBuffer)
     {
@@ -1024,16 +1028,12 @@ class VulkanCaptureManager : public ApiCaptureManager
         }
     }
 
+    void PreProcess_vkCmdExecuteCommands(VkCommandBuffer        commandBuffer,
+                                           uint32_t             commandBufferCount,
+                                           const VkCommandBuffer* pCommandBuffers);
     void PostProcess_vkCmdExecuteCommands(VkCommandBuffer        commandBuffer,
-                                          uint32_t               commandBufferCount,
-                                          const VkCommandBuffer* pCommandBuffers)
-    {
-        if (IsCaptureModeTrack())
-        {
-            assert(state_tracker_ != nullptr);
-            state_tracker_->TrackExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers);
-        }
-    }
+                                           uint32_t             commandBufferCount,
+                                           const VkCommandBuffer* pCommandBuffers);
 
     void PostProcess_vkTrimCommandPool(VkDevice device, VkCommandPool commandPool, VkCommandPoolTrimFlags)
     {
@@ -1688,7 +1688,15 @@ class VulkanCaptureManager : public ApiCaptureManager
                                                         uint32_t        maxDrawCount,
                                                         uint32_t        stride);
 
-    void PostProcess_vkCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo);
+        void PostProcess_vkCmdBeginRendering(VkCommandBuffer        commandBuffer,
+
+                                             const VkRenderingInfo* pRenderingInfo);
+
+    
+
+        void PostProcess_vkCmdBeginRenderingKHR(VkCommandBuffer        commandBuffer,
+
+                                                const VkRenderingInfo* pRenderingInfo);
 
     void PostProcess_vkSetDebugUtilsObjectNameEXT(VkResult                             result,
                                                   VkDevice                             device,

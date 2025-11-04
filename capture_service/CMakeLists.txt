@@ -75,7 +75,9 @@ else()
     )
 
     add_executable(dive_client_cli dive_client_cli.cc)
-    target_link_libraries(
+    message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+  message(STATUS "PM4_EXTRACTOR_PATH: ${CMAKE_SOURCE_DIR}/cli/pm4_extractor.cpp")
+  target_link_libraries(
         dive_client_cli
         network
         device_mgr
@@ -83,6 +85,7 @@ else()
         absl::flags_parse
         absl::algorithm
         absl::strings
+    dive_core
     )
     target_include_directories(
         dive_client_cli

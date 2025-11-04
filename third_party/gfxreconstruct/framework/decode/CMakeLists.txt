@@ -390,6 +390,7 @@ else()
                            PUBLIC
                                ${CMAKE_BINARY_DIR}
                                ${PROJECT_SOURCE_DIR}/framework
+                               ${PROJECT_SOURCE_DIR}/framework/generated/vulkan_ext
                                ${PROJECT_SOURCE_DIR}/external
                                ${PROJECT_SOURCE_DIR}/external/precompiled/linux/include/
                                $<$<BOOL:${D3D12_SUPPORT}>:${D3D12_INCLUDE_DIRECTORIES}>)

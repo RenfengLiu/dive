@@ -39,6 +39,7 @@
 
 #include "vulkan/vulkan.h"
 #include "vulkan/vulkan_core.h"
+#include "generated/vulkan_ext/vk_qcom_render_mode_control.h"
 
 #include <cstddef>
 #include <limits>
@@ -467,6 +468,7 @@ struct CommandBufferWrapper : public HandleWrapper<VkCommandBuffer>
     // pending image layout on calls to vkCmdEndRenderPass.
     RenderPassWrapper*  active_render_pass{ nullptr };
     FramebufferWrapper* render_pass_framebuffer{ nullptr };
+    VkRenderModeQCOM    active_render_mode{ VK_RENDER_MODE_OPTIMAL_QCOM };
 
     // Treat the sumbission of this command buffer as a frame boundary.
     bool is_frame_boundary{ false };

@@ -33,6 +33,8 @@
 
 #include "format/platform_types.h"
 
+#include "vk_qcom_render_mode_control.h"
+
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 GFXRECON_BEGIN_NAMESPACE(feature_util)
@@ -62,6 +64,8 @@ void CheckUnsupportedFeatures(VkPhysicalDevice physicalDevice,
         const VkDeviceCreateInfo* next = reinterpret_cast<const VkDeviceCreateInfo*>(pNext);
         while (next != nullptr)
         {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
             switch (next->sType)
             {
             // Special case to set VkPhysicalDeviceFeatures if passed in pNext
@@ -2458,6 +2462,21 @@ void CheckUnsupportedFeatures(VkPhysicalDevice physicalDevice,
                     GFXRECON_LOG_WARNING("Feature presentModeFifoLatestReady %s", warn_message);
                     found_unsupported = true;
                     const_cast<VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR*>(currentNext)->presentModeFifoLatestReady =
+                        remove_unsupported ? VK_FALSE : VK_TRUE;
+                }
+                break;
+            }
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM):
+            {
+                const VkPhysicalDeviceRenderModeControlFeaturesQCOM* currentNext = reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(next);
+                VkPhysicalDeviceRenderModeControlFeaturesQCOM query = { static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM), nullptr };
+                physicalDeviceFeatures2.pNext = &query;
+                GetPhysicalDeviceFeatures2(physicalDevice, &physicalDeviceFeatures2);
+                if ((currentNext->renderModeControl == VK_TRUE) && (query.renderModeControl == VK_FALSE))
+                {
+                    GFXRECON_LOG_WARNING("Feature renderModeControl %s", warn_message);
+                    found_unsupported = true;
+                    const_cast<VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(currentNext)->renderModeControl =
                         remove_unsupported ? VK_FALSE : VK_TRUE;
                 }
                 break;
@@ -5384,6 +5403,7 @@ void CheckUnsupportedFeatures(VkPhysicalDevice physicalDevice,
              default:
                 break;
             }
+#pragma clang diagnostic pop
             next = reinterpret_cast<const VkDeviceCreateInfo*>(next->pNext);
         }
     }

@@ -52,6 +52,8 @@ std::string GenerateExtension(std::ostream& out, const void* struct_info, void* 
     if (struct_info != nullptr && meta_info != nullptr) {
         const VkBaseInStructure* base_struct = reinterpret_cast<const VkBaseInStructure*>(struct_info);
         PNextNode* pnext_meta_data = reinterpret_cast<PNextNode*>(meta_info);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
         switch (base_struct->sType) {
             case VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO: {
                 auto casted_struct = reinterpret_cast<const VkPipelineLayoutCreateInfo*>(struct_info);
@@ -3150,6 +3152,26 @@ std::string GenerateExtension(std::ostream& out, const void* struct_info, void* 
                                                                       casted_struct,
                                                                       decoded_struct,
                                                                       consumer);
+
+                break;
+            }
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM): {
+                auto casted_struct = reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(struct_info);
+                auto decoded_struct = reinterpret_cast<Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(pnext_meta_data->GetMetaStructPointer());
+                next_var_name = "&" +  GenerateStruct_VkPhysicalDeviceRenderModeControlFeaturesQCOM(out,
+                                                              casted_struct,
+                                                              decoded_struct,
+                                                              consumer);
+
+                break;
+            }
+            case static_cast<VkStructureType>(VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM): {
+                auto casted_struct = reinterpret_cast<const VkRenderModeControlRenderPassBeginInfoQCOM*>(struct_info);
+                auto decoded_struct = reinterpret_cast<Decoded_VkRenderModeControlRenderPassBeginInfoQCOM*>(pnext_meta_data->GetMetaStructPointer());
+                next_var_name = "&" +  GenerateStruct_VkRenderModeControlRenderPassBeginInfoQCOM(out,
+                                                           casted_struct,
+                                                           decoded_struct,
+                                                           consumer);
 
                 break;
             }
@@ -6538,6 +6560,7 @@ std::string GenerateExtension(std::ostream& out, const void* struct_info, void* 
                 break;
             }
         }
+#pragma clang diagnostic pop
     }
     return next_var_name;
 }
