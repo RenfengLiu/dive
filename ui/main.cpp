@@ -20,6 +20,7 @@
 #include <QSplashScreen>
 #include <QStyleFactory>
 #include <QTimer>
+#include <filesystem>
 #include <iostream>
 #include "dive_core/common.h"
 #include "dive_core/pm4_info.h"
@@ -29,8 +30,105 @@
 #    include <dlfcn.h>
 #endif
 
+#if defined(HAS_CRASHPAD)
+#    include "client/crash_report_database.h"
+#    include "client/crashpad_client.h"
+#    include "client/settings.h"
+#endif
+
 constexpr int kSplashScreenDuration = 2000;  // 2s
 constexpr int kStartDelay = 500;             // 0.5s
+
+#if defined(HAS_CRASHPAD)
+bool InitializeCrashpad()
+{
+    using namespace crashpad;
+
+    std::map<std::string, std::string> annotations;
+    annotations["product"] = DIVE_PRODUCT_NAME;
+    annotations["version"] = DIVE_VERSION_STRING;
+
+#    ifdef _WIN32
+    std::vector<std::string> arguments = { "--no-rate-limit" };
+#    else
+    std::vector<std::string> arguments = { "--no-rate-limit", "--no-upload-gzip" };
+#    endif
+
+    // Find the crashpad_handler executable.
+    // We assume it's located alongside the main executable.
+    // TODO: This might need adjustment based on actual install layout.
+    std::filesystem::path handler_path = std::filesystem::canonical("/proc/self/exe").parent_path() /
+                                         "crashpad_handler";
+#    ifdef _WIN32
+    handler_path.replace_extension(".exe");
+#    endif
+
+    // Determine where to store crash reports.
+    std::filesystem::path database_path;
+#    ifdef _WIN32
+    const char *local_app_data = getenv("LOCALAPPDATA");
+    if (local_app_data)
+    {
+        database_path = std::filesystem::path(local_app_data) / "Google" / "Dive" / "Crashes";
+    }
+#    elif defined(__APPLE__)
+    const char *home = getenv("HOME");
+    if (home)
+    {
+        database_path = std::filesystem::path(home) / "Library" / "Application Support" / "Google" /
+                        "Dive" / "Crashes";
+    }
+#    else  // Linux
+    const char *xdg_config_home = getenv("XDG_CONFIG_HOME");
+    if (xdg_config_home)
+    {
+        database_path = std::filesystem::path(xdg_config_home) / "dive" / "crashes";
+    }
+    else
+    {
+        const char *home = getenv("HOME");
+        if (home)
+        {
+            database_path = std::filesystem::path(home) / ".config" / "dive" / "crashes";
+        }
+    }
+#    endif
+
+    if (database_path.empty())
+    {
+        // Fallback to temp directory if we can't find a suitable config dir
+        database_path = std::filesystem::temp_directory_path() / "dive_crashes";
+    }
+
+    // Ensure the database directory exists
+    std::error_code ec;
+    if (!std::filesystem::create_directories(database_path, ec) && ec)
+    {
+        std::cerr << "Failed to create crash database directory: " << database_path << " ("
+                  << ec.message() << ")" << std::endl;
+        return false;
+    }
+
+    std::cout << "Crashpad initialized. Database: " << database_path << std::endl;
+
+    static CrashpadClient client;
+    bool                  success = client.StartHandler(base::FilePath(handler_path.string()),
+                                       base::FilePath(database_path.string()),
+                                       base::FilePath(),
+                                       "",
+                                       annotations,
+                                       arguments,
+                                       true,   // restartable
+                                       false,  // asynchronous_start
+                                       {});    // attachments
+
+    if (!success)
+    {
+        std::cerr << "Failed to start Crashpad handler." << std::endl;
+    }
+    return success;
+}
+#endif
 
 //--------------------------------------------------------------------------------------------------
 bool SetApplicationStyle(QString style_key)
@@ -85,6 +183,10 @@ void setDarkMode(QApplication &app)
 //--------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+#if defined(HAS_CRASHPAD)
+    InitializeCrashpad();
+#endif
+
     // Check number of arguments
     if (argc != 1 && argc != 2)
         return 0;

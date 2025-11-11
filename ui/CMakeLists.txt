@@ -81,6 +81,15 @@ if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
     target_link_libraries(${PROJECT_NAME} stdc++fs)
 endif()
 
+if(TARGET crashpad_client)
+    target_link_libraries(${PROJECT_NAME} crashpad_client)
+    target_include_directories(
+        ${PROJECT_NAME}
+        PRIVATE ${THIRDPARTY_DIRECTORY}/crashpad ${THIRDPARTY_DIRECTORY}/mini_chromium
+    )
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_CRASHPAD)
+endif()
+
 # Custom executable name
 set_property(TARGET ${PROJECT_NAME} PROPERTY OUTPUT_NAME "dive")
 
