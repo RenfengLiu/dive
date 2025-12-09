@@ -1151,6 +1151,8 @@ struct Decoded_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM;
 struct Decoded_VkPhysicalDeviceCubicClampFeaturesQCOM;
 struct Decoded_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT;
 struct Decoded_VkPhysicalDeviceLayeredDriverPropertiesMSFT;
+struct Decoded_VkRenderModeControlRenderPassBeginInfoQCOM;
+struct Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM;
 struct Decoded_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV;
 struct Decoded_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM;
 struct Decoded_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM;
@@ -2352,6 +2354,8 @@ size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceCubicClampFeaturesQCOM* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceLayeredDriverPropertiesMSFT* wrapper);
+size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* wrapper);
+size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM* wrapper);
 size_t DecodeStruct(const uint8_t* parameter_buffer, size_t buffer_size, Decoded_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM* wrapper);

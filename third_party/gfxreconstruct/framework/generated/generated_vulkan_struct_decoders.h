@@ -10685,6 +10685,24 @@ struct Decoded_VkPhysicalDeviceLayeredDriverPropertiesMSFT
     PNextNode* pNext{ nullptr };
 };
 
+struct Decoded_VkRenderModeControlRenderPassBeginInfoQCOM
+{
+    using struct_type = VkRenderModeControlRenderPassBeginInfoQCOM;
+
+    VkRenderModeControlRenderPassBeginInfoQCOM* decoded_value{ nullptr };
+
+    PNextNode* pNext{ nullptr };
+};
+
+struct Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM
+{
+    using struct_type = VkPhysicalDeviceRenderModeControlFeaturesQCOM;
+
+    VkPhysicalDeviceRenderModeControlFeaturesQCOM* decoded_value{ nullptr };
+
+    PNextNode* pNext{ nullptr };
+};
+
 struct Decoded_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV
 {
     using struct_type = VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV;

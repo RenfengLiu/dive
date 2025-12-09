@@ -4866,6 +4866,21 @@ void CheckUnsupportedFeatures(VkPhysicalDevice physicalDevice,
                 }
                 break;
             }
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM:
+            {
+                const VkPhysicalDeviceRenderModeControlFeaturesQCOM* currentNext = reinterpret_cast<const VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(next);
+                VkPhysicalDeviceRenderModeControlFeaturesQCOM query = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM, nullptr };
+                physicalDeviceFeatures2.pNext = &query;
+                GetPhysicalDeviceFeatures2(physicalDevice, &physicalDeviceFeatures2);
+                if ((currentNext->renderModeControl == VK_TRUE) && (query.renderModeControl == VK_FALSE))
+                {
+                    GFXRECON_LOG_WARNING("Feature renderModeControl %s", warn_message);
+                    found_unsupported = true;
+                    const_cast<VkPhysicalDeviceRenderModeControlFeaturesQCOM*>(currentNext)->renderModeControl =
+                        remove_unsupported ? VK_FALSE : VK_TRUE;
+                }
+                break;
+            }
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV:
             {
                 const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* currentNext = reinterpret_cast<const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV*>(next);

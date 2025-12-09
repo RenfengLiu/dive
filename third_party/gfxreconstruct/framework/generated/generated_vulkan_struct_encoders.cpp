@@ -10673,6 +10673,20 @@ void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceLayeredDriver
     encoder->EncodeEnumValue(value.underlyingAPI);
 }
 
+void EncodeStruct(ParameterEncoder* encoder, const VkRenderModeControlRenderPassBeginInfoQCOM& value)
+{
+    encoder->EncodeEnumValue(value.sType);
+    EncodePNextStruct(encoder, value.pNext);
+    encoder->EncodeEnumValue(value.preferredRenderMode);
+}
+
+void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceRenderModeControlFeaturesQCOM& value)
+{
+    encoder->EncodeEnumValue(value.sType);
+    EncodePNextStruct(encoder, value.pNext);
+    encoder->EncodeUInt32Value(value.renderModeControl);
+}
+
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV& value)
 {
     encoder->EncodeEnumValue(value.sType);

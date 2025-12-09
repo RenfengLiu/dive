@@ -2232,6 +2232,10 @@ std::string GenerateStruct_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFea
 
 std::string GenerateStruct_VkPhysicalDeviceLayeredDriverPropertiesMSFT(std::ostream &out, const VkPhysicalDeviceLayeredDriverPropertiesMSFT* structInfo, Decoded_VkPhysicalDeviceLayeredDriverPropertiesMSFT* metaInfo, VulkanCppConsumerBase &consumer);
 
+std::string GenerateStruct_VkPhysicalDeviceRenderModeControlFeaturesQCOM(std::ostream &out, const VkPhysicalDeviceRenderModeControlFeaturesQCOM* structInfo, Decoded_VkPhysicalDeviceRenderModeControlFeaturesQCOM* metaInfo, VulkanCppConsumerBase &consumer);
+
+std::string GenerateStruct_VkRenderModeControlRenderPassBeginInfoQCOM(std::ostream &out, const VkRenderModeControlRenderPassBeginInfoQCOM* structInfo, Decoded_VkRenderModeControlRenderPassBeginInfoQCOM* metaInfo, VulkanCppConsumerBase &consumer);
+
 std::string GenerateStruct_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(std::ostream &out, const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* structInfo, Decoded_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV* metaInfo, VulkanCppConsumerBase &consumer);
 
 std::string GenerateStruct_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(std::ostream &out, const VkPhysicalDeviceTileMemoryHeapFeaturesQCOM* structInfo, Decoded_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM* metaInfo, VulkanCppConsumerBase &consumer);

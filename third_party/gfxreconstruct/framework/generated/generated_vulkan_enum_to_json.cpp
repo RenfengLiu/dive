@@ -8272,6 +8272,24 @@ void FieldToJson(nlohmann::ordered_json& jdata, const VkRayTracingShaderGroupTyp
     }
 }
 
+void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderModeQCOM& value, const JsonOptions& options)
+{
+    switch (value) {
+        case VK_RENDER_MODE_OPTIMAL_QCOM:
+            jdata = "VK_RENDER_MODE_OPTIMAL_QCOM";
+            break;
+        case VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM:
+            jdata = "VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM";
+            break;
+        case VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM:
+            jdata = "VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM";
+            break;
+        default:
+            jdata = to_hex_fixed_width(value);
+            break;
+    }
+}
+
 void FieldToJson(nlohmann::ordered_json& jdata, const VkRenderPassCreateFlagBits& value, const JsonOptions& options)
 {
     switch (value) {
@@ -12302,6 +12320,12 @@ void FieldToJson(nlohmann::ordered_json& jdata, const VkStructureType& value, co
             break;
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC:
             jdata = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC";
+            break;
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM:
+            jdata = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM";
+            break;
+        case VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM:
+            jdata = "VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM";
             break;
         default:
             jdata = to_hex_fixed_width(value);

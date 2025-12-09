@@ -49,6 +49,12 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/gfxreconstruct/framework
         ${CMAKE_CURRENT_SOURCE_DIR}/../../
 )
+target_include_directories(
+    dive_renderdoc
+    SYSTEM PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/gfxreconstruct/external/Vulkan-Headers/include
+)
+
 
 # The Android Gradle script invokes its own CMake, starting from gfxrecon-replay's CMakeLists.txt.
 # This build system is isolated and does not see the gpu_time target defined in the root CMakeLists.txt.

@@ -1154,6 +1154,8 @@ void EncodeStruct(ParameterEncoder* encoder, const VkSamplerYcbcrConversionYcbcr
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceCubicClampFeaturesQCOM& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceLayeredDriverPropertiesMSFT& value);
+void EncodeStruct(ParameterEncoder* encoder, const VkRenderModeControlRenderPassBeginInfoQCOM& value);
+void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceRenderModeControlFeaturesQCOM& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceTileMemoryHeapFeaturesQCOM& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkPhysicalDeviceTileMemoryHeapPropertiesQCOM& value);

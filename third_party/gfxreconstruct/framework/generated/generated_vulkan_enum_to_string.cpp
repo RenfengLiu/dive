@@ -4420,6 +4420,17 @@ template <> std::string ToString<VkRayTracingShaderGroupTypeKHR>(const VkRayTrac
     return "Unhandled VkRayTracingShaderGroupTypeKHR";
 }
 
+template <> std::string ToString<VkRenderModeQCOM>(const VkRenderModeQCOM& value, ToStringFlags, uint32_t, uint32_t)
+{
+    switch (value) {
+    case VK_RENDER_MODE_OPTIMAL_QCOM: return "VK_RENDER_MODE_OPTIMAL_QCOM";
+    case VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM: return "VK_RENDER_MODE_FORCE_HW_VIS_BINNING_QCOM";
+    case VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM: return "VK_RENDER_MODE_FORCE_HW_DIRECT_QCOM";
+    default: break;
+    }
+    return "Unhandled VkRenderModeQCOM";
+}
+
 template <> std::string ToString<VkRenderPassCreateFlagBits>(const VkRenderPassCreateFlagBits& value, ToStringFlags, uint32_t, uint32_t)
 {
     switch (value) {
@@ -5969,6 +5980,8 @@ template <> std::string ToString<VkStructureType>(const VkStructureType& value, 
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT: return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT";
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR: return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR";
     case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC: return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC";
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM: return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM";
+    case VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM: return "VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM";
     default: break;
     }
     return "Unhandled VkStructureType";

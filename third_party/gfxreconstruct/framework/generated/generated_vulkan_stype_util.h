@@ -939,6 +939,8 @@ template <> constexpr VkStructureType GetSType<VkSamplerYcbcrConversionYcbcrDega
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceCubicClampFeaturesQCOM>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceLayeredDriverPropertiesMSFT>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT; }
+template <> constexpr VkStructureType GetSType<VkRenderModeControlRenderPassBeginInfoQCOM>(){ return VK_STRUCTURE_TYPE_RENDER_MODE_CONTROL_RENDER_PASS_BEGIN_INFO_QCOM; }
+template <> constexpr VkStructureType GetSType<VkPhysicalDeviceRenderModeControlFeaturesQCOM>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_MODE_CONTROL_FEATURES_QCOM; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceTileMemoryHeapFeaturesQCOM>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM; }
 template <> constexpr VkStructureType GetSType<VkPhysicalDeviceTileMemoryHeapPropertiesQCOM>(){ return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM; }

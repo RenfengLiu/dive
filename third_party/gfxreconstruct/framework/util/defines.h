@@ -73,4 +73,5 @@ static constexpr uint64_t GFXRECON_PTR_TO_UINT64(T ptr)
 #define GFXRECON_DEBUG_BUILD 1
 #endif
 
+#include "vulkan_ext/vk_qcom_render_mode_control.h"
 #endif // GFXRECON_UTIL_DEFINES_H
